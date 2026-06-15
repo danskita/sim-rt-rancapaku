@@ -62,30 +62,37 @@ if uploaded_file is not None:
         # Membaca file Excel
         df = pd.read_excel(uploaded_file)
         
-        # Pastikan data NIK dan No KK dibaca sebagai teks utuh tanpa angka nol di belakang (.0)
+        # 1. PEMBERSIH NIK & KK: Pastikan dibaca sebagai teks utuh tanpa koma nol (.0)
         if 'nik' in df.columns:
-            df['nik'] = df['nik'].astype(str).str.replace(r'\.0', '', regex=True)
+            df['nik'] = df['nik'].astype(str).str.replace(r'\.0$', '', regex=True)
         if 'no_kk' in df.columns:
-            df['no_kk'] = df['no_kk'].astype(str).str.replace(r'\.0', '', regex=True)
+            df['no_kk'] = df['no_kk'].astype(str).str.replace(r'\.0$', '', regex=True)
+            
+        # 2. PENERJEMAH RT & RW: Paksa menjadi 3 digit otomatis (contoh: "1" menjadi "001")
+        if 'rt' in df.columns:
+            df['rt'] = df['rt'].astype(str).str.replace(r'\.0$', '', regex=True).str.zfill(3)
+        if 'rw' in df.columns:
+            df['rw'] = df['rw'].astype(str).str.replace(r'\.0$', '', regex=True).str.zfill(3)
 
-        # --- PERBAIKAN FORMAT TANGGAL OTOMATIS ---
+        # 3. PENERJEMAH TANGGAL: Sesuaikan format tanggal ke standar Supabase (YYYY-MM-DD)
         if 'tanggal_lahir' in df.columns:
-            # Pandas akan secara pintar menerjemahkan tanggal dari Excel (DD-MM-YYYY) menjadi standar Database (YYYY-MM-DD)
             df['tanggal_lahir'] = pd.to_datetime(df['tanggal_lahir'], dayfirst=True, errors='coerce').dt.strftime('%Y-%m-%d')
-        # ----------------------------------------
 
-        st.write("Preview Data yang akan diimpor:")
-        st.dataframe(df.head(), width='stretch')
-        
-        if st.button("Mulai Import ke Database", type="primary"):
-            with st.spinner("Sedang mengimpor data..."):
-                # Membersihkan data (mengubah NaN/Data Kosong menjadi format None yang diterima database)
-                df = df.where(pd.notnull(df), None)
-                data_records = df.to_dict(orient='records')
+        # Tampilkan preview data yang sudah dirapikan kepada pengguna
+        st.write("Preview Data yang siap diimpor:")
+        st.dataframe(df)
+
+        # Tombol untuk mengeksekusi import ke database Supabase
+        if st.button("🚀 Mulai Import ke Database", use_container_width=True):
+            with st.spinner("Sedang menyimpan data ke cloud..."):
+                # Konversi dataframe Pandas menjadi format dictionary untuk Supabase
+                data_import = df.to_dict(orient="records")
                 
-                # Kirim ke Supabase
-                response = supabase.table("data_penduduk").insert(data_records).execute()
-                st.success(f"✅ Berhasil mengimpor {len(data_records)} data penduduk dari file Excel.")
+                # Masukkan data secara masal ke tabel data_penduduk
+                response = supabase.table("data_penduduk").insert(data_import).execute()
+                
+                st.success(f"✅ Mantap! {len(df)} data warga berhasil diimpor ke database.")
                 
     except Exception as e:
-        st.error(f"⚠️ Terjadi kesalahan: {e}")
+        st.error(f"❌ Terjadi kesalahan saat membaca atau menyimpan file: {e}")
+        st.info("Pastikan Anda menggunakan Template Excel yang diunduh dari aplikasi ini dan tidak ada NIK yang ganda.")
