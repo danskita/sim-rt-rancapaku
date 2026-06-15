@@ -34,6 +34,7 @@ def tampilkan_menu():
         st.sidebar.page_link("pages/10_Profil_RT.py", label="Profil Wilayah", icon="🏢")
         st.sidebar.page_link("pages/12_Manajemen_Akun.py", label="Manajemen Akun", icon="🔐")
         st.sidebar.page_link("pages/11_Pengaturan_Sistem.py", label="Pengaturan Sistem", icon="⚠️")
+        st.sidebar.page_link("pages/13_Cetak_Laporan_Pdf.py", label="Cetak Lapaoran", icon="⚠️")
 
     # Tombol Logout (Berlaku untuk semua)
     st.sidebar.markdown("---")
