@@ -92,9 +92,9 @@ else:
             st.session_state['autofill_nik'] = nik_target
             st.switch_page("pages/4_Data_Surat.py")
     with col_btn2:
-        if st.button("🔄 Lapor LAMPID"):
+        if st.button("🔄 Lapor Lampid"):
             st.session_state['autofill_nik'] = nik_target
-            st.switch_page("pages/2_Data_LAMPID.py")
+            st.switch_page("pages/2_Data_Lampid.py")
     with col_btn3:
         if st.button("📦 Beri Bansos"):
             st.session_state['autofill_nik'] = nik_target
