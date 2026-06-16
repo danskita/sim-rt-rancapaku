@@ -38,19 +38,31 @@ if role == "operator_rt":
     st.stop()
 
 # 2. LOGIKA UNTUK ADMIN RW & KEPALA DESA
-st.markdown("Atur identitas tingkat RW di sini. **Data Desa/Kecamatan/Kota akan otomatis disinkronkan ke seluruh RT (001-005)** di bawah naungan RW yang dipilih.")
+st.markdown("Atur identitas profil kewilayahan di sini. **Perubahan Data Desa/Kecamatan/Kota akan otomatis disinkronkan ke seluruh bawahan.**")
 
-# Menentukan RW mana yang sedang diedit
+# Menentukan profil mana yang sedang diedit
 if role == "super_admin":
-    pilihan_rw = [f"{i:03}" for i in range(1, 11)]
-    rw_terpilih = st.selectbox("Pilih RW yang akan dikonfigurasi (Khusus Kepala Desa)", pilihan_rw)
+    opsi_pilihan = ["TINGKAT DESA (Master)"] + [f"RW {i:03}" for i in range(1, 11)]
+    pilihan_wilayah = st.selectbox("Pilih Profil yang akan dikonfigurasi:", opsi_pilihan)
+    
+    if pilihan_wilayah == "TINGKAT DESA (Master)":
+        nama_target_rw = "TINGKAT DESA"
+        rw_terpilih = "000"
+        label_pimpinan = "Nama Kepala Desa *"
+        label_alamat = "Alamat Kantor Desa / Sekretariat"
+    else:
+        nama_target_rw = pilihan_wilayah
+        rw_terpilih = pilihan_wilayah.replace("RW ", "")
+        label_pimpinan = "Nama Ketua RW *"
+        label_alamat = "Alamat Lengkap Sekretariat RW"
 else:
     rw_terpilih = rw_akses
-    st.info(f"Anda sedang mengonfigurasi profil induk untuk **RW {rw_terpilih}**")
+    nama_target_rw = f"RW {rw_terpilih}"
+    label_pimpinan = "Nama Ketua RW *"
+    label_alamat = "Alamat Lengkap Sekretariat RW"
+    st.info(f"Anda sedang mengonfigurasi profil induk untuk **{nama_target_rw}**")
 
-nama_target_rw = f"RW {rw_terpilih}"
-
-# Mengambil data profil RW jika sudah ada sebelumnya
+# Mengambil data profil jika sudah ada sebelumnya
 try:
     res_rw = supabase.table("profil_rt").select("*").eq("nama_rt_rw", nama_target_rw).execute()
     profil_rw = res_rw.data[0] if res_rw.data else {}
@@ -58,7 +70,7 @@ except:
     profil_rw = {}
 
 with st.form("form_profil_rw"):
-    st.subheader(f"Identitas Induk {nama_target_rw}")
+    st.subheader(f"Identitas {nama_target_rw}")
     
     desa_kelurahan = st.text_input("Nama Desa / Kelurahan *", value=profil_rw.get("kelurahan", "Desa Maju Bersama"))
     
@@ -69,20 +81,21 @@ with st.form("form_profil_rw"):
         kota = st.text_input("Kabupaten / Kota", value=profil_rw.get("kota", ""))
         
     st.markdown("---")
-    st.subheader("Detail Sekretariat & Pengurus RW")
-    alamat_sekretariat = st.text_area("Alamat Lengkap Sekretariat RW", value=profil_rw.get("alamat_sekretariat", ""))
+    st.subheader("Detail Sekretariat & Pimpinan")
+    alamat_sekretariat = st.text_area(label_alamat, value=profil_rw.get("alamat_sekretariat", ""))
     kode_pos = st.text_input("Kode Pos", value=profil_rw.get("kode_pos", ""))
-    nama_ketua_rw = st.text_input("Nama Ketua RW *", value=profil_rw.get("nama_ketua_rt", "")) 
+    nama_ketua_rw = st.text_input(label_pimpinan, value=profil_rw.get("nama_ketua_rt", "")) 
     
-    submit_profil = st.form_submit_button("Simpan & Sinkronkan ke Data RT", type="primary")
+    teks_tombol = "Simpan & Sinkronkan ke Seluruh Data" if nama_target_rw == "TINGKAT DESA" else "Simpan & Sinkronkan ke Data RT"
+    submit_profil = st.form_submit_button(teks_tombol, type="primary")
     
     if submit_profil:
         if not desa_kelurahan or not nama_ketua_rw:
-            st.warning("⚠️ Mohon lengkapi Nama Desa dan Nama Ketua RW.")
+            st.warning("⚠️ Mohon lengkapi Nama Desa dan Nama Pimpinan.")
         else:
-            with st.spinner("Sedang merakit profil RW dan menyebar data sinkronisasi ke seluruh RT..."):
+            with st.spinner("Sedang merakit profil dan menyebar data sinkronisasi..."):
                 try:
-                    # A. Menyiapkan Data Profil RW (Induk)
+                    # A. Menyiapkan Data Profil
                     data_rw_update = {
                         "nama_rt_rw": nama_target_rw,
                         "kelurahan": desa_kelurahan.title().strip(),
@@ -91,47 +104,55 @@ with st.form("form_profil_rw"):
                         "kode_pos": kode_pos.strip(),
                         "alamat_sekretariat": alamat_sekretariat.title().strip(),
                         "nama_ketua_rt": nama_ketua_rw.title().strip(),
-                        "rw": rw_terpilih # Tambahan: pastikan kolom rw terisi agar filter PDF berjalan mulus
+                        "rw": rw_terpilih,
+                        "rt": "000" if nama_target_rw == "TINGKAT DESA" else ""
                     }
                     
-                    # B. Simpan atau Perbarui Profil RW
+                    # B. Simpan atau Perbarui Profil
                     if profil_rw:
                         supabase.table("profil_rt").update(data_rw_update).eq("nama_rt_rw", nama_target_rw).execute()
                     else:
                         supabase.table("profil_rt").insert(data_rw_update).execute()
                         
-                    # C. LAKUKAN SINKRONISASI OTOMATIS KE RT 001 - 005
-                    for i in range(1, 6):
-                        rt_str = f"{i:03}"
-                        nama_rt_target = f"RT {rt_str} / RW {rw_terpilih}"
-                        
-                        # Cek apakah RT ini sudah punya profil sendiri atau belum
-                        res_rt = supabase.table("profil_rt").select("id").eq("nama_rt_rw", nama_rt_target).execute()
-                        
-                        if res_rt.data:
-                            # Jika RT sudah ada, KITA HANYA UPDATE DESA/KECAMATAN/KOTA SAJA.
-                            supabase.table("profil_rt").update({
-                                "kelurahan": desa_kelurahan.title().strip(),
-                                "kecamatan": kecamatan.title().strip(),
-                                "kota": kota.title().strip(),
-                                "kode_pos": kode_pos.strip()
-                            }).eq("nama_rt_rw", nama_rt_target).execute()
-                        else:
-                            # Jika RT belum ada di database, buatkan profil dasarnya secara otomatis!
-                            data_rt_baru = {
-                                "nama_rt_rw": nama_rt_target,
-                                "kelurahan": desa_kelurahan.title().strip(),
-                                "kecamatan": kecamatan.title().strip(),
-                                "kota": kota.title().strip(),
-                                "kode_pos": kode_pos.strip(),
-                                "alamat_sekretariat": alamat_sekretariat.title().strip(), 
-                                "nama_ketua_rt": f"Ketua RT {rt_str}",
-                                "rt": rt_str,        # Tambahan: mengisi kolom rt untuk filter
-                                "rw": rw_terpilih    # Tambahan: mengisi kolom rw untuk filter
-                            }
-                            supabase.table("profil_rt").insert(data_rt_baru).execute()
+                    # C. LAKUKAN SINKRONISASI OTOMATIS
+                    if nama_target_rw == "TINGKAT DESA":
+                        # Update NAMA DESA ke semua baris di profil_rt agar sinkron dari atas ke bawah
+                        supabase.table("profil_rt").update({
+                            "kelurahan": desa_kelurahan.title().strip(),
+                            "kecamatan": kecamatan.title().strip(),
+                            "kota": kota.title().strip(),
+                            "kode_pos": kode_pos.strip()
+                        }).neq("nama_rt_rw", "x").execute()
+                    else:
+                        # Jika yang disimpan adalah RW, sinkronkan ke RT 001 - 005 di bawahnya
+                        for i in range(1, 6):
+                            rt_str = f"{i:03}"
+                            nama_rt_target = f"RT {rt_str} / RW {rw_terpilih}"
                             
-                    st.success(f"✅ Sempurna! Profil **{nama_target_rw}** berhasil disimpan. Data Desa/Kelurahan telah otomatis didistribusikan ke RT 001 hingga RT 005.")
-                    st.cache_data.clear() # Membersihkan cache agar Dashboard langsung ganti nama Desa!
+                            res_rt = supabase.table("profil_rt").select("id").eq("nama_rt_rw", nama_rt_target).execute()
+                            
+                            if res_rt.data:
+                                supabase.table("profil_rt").update({
+                                    "kelurahan": desa_kelurahan.title().strip(),
+                                    "kecamatan": kecamatan.title().strip(),
+                                    "kota": kota.title().strip(),
+                                    "kode_pos": kode_pos.strip()
+                                }).eq("nama_rt_rw", nama_rt_target).execute()
+                            else:
+                                data_rt_baru = {
+                                    "nama_rt_rw": nama_rt_target,
+                                    "kelurahan": desa_kelurahan.title().strip(),
+                                    "kecamatan": kecamatan.title().strip(),
+                                    "kota": kota.title().strip(),
+                                    "kode_pos": kode_pos.strip(),
+                                    "alamat_sekretariat": alamat_sekretariat.title().strip(), 
+                                    "nama_ketua_rt": f"Ketua RT {rt_str}",
+                                    "rt": rt_str,        
+                                    "rw": rw_terpilih    
+                                }
+                                supabase.table("profil_rt").insert(data_rt_baru).execute()
+                            
+                    st.success(f"✅ Sempurna! Profil **{nama_target_rw}** berhasil disimpan dan disinkronkan.")
+                    st.cache_data.clear() # Membersihkan cache agar sapaan Dashboard terganti otomatis
                 except Exception as e:
                     st.error(f"⚠️ Terjadi kesalahan saat sinkronisasi profil: {e}")
