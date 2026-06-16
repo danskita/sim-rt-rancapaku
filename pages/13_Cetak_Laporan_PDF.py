@@ -195,25 +195,31 @@ if st.button("🖨️ Cetak ke PDF Resmi Sekarang", type="primary", width="stret
             
             class PDF(FPDF):
                 def header(self):
-                    self.set_font("helvetica", "B", 14)
-                    self.cell(0, 7, f"PEMERINTAH KABUPATEN/KOTA {kota.upper()}", align="C", new_x="LMARGIN", new_y="NEXT")
-                    self.cell(0, 7, f"KECAMATAN {kecamatan.upper()}", align="C", new_x="LMARGIN", new_y="NEXT")
-                    self.cell(0, 7, f"DESA/KELURAHAN {nama_desa.upper()}", align="C", new_x="LMARGIN", new_y="NEXT")
-                    self.set_font("helvetica", "", 10)
-                    
-                    teks_alt = f"Alamat Sekretariat: {alamat}"
-                    if kode_pos: teks_alt += f", Kode Pos: {kode_pos}"
-                    
-                    self.cell(0, 6, teks_alt, align="C", new_x="LMARGIN", new_y="NEXT")
-                    
-                    # Garis kop surat
-                    y_pos = self.get_y() + 2
-                    self.set_line_width(0.8)
-                    self.line(10, y_pos, 200, y_pos) # Lebar garis = 190mm
-                    self.set_line_width(0.2)
-                    self.line(10, y_pos + 1.2, 200, y_pos + 1.2)
-                    
-                    self.ln(10)
+                    # KOP SURAT HANYA MUNCUL DI HALAMAN PERTAMA (HALAMAN 1)
+                    if self.page_no() == 1:
+                        self.set_font("helvetica", "B", 14)
+                        self.cell(0, 7, f"PEMERINTAH KABUPATEN/KOTA {kota.upper()}", align="C", new_x="LMARGIN", new_y="NEXT")
+                        self.cell(0, 7, f"KECAMATAN {kecamatan.upper()}", align="C", new_x="LMARGIN", new_y="NEXT")
+                        self.cell(0, 7, f"DESA/KELURAHAN {nama_desa.upper()}", align="C", new_x="LMARGIN", new_y="NEXT")
+                        self.set_font("helvetica", "", 10)
+                        
+                        teks_alt = f"Alamat Sekretariat: {alamat}"
+                        if kode_pos: teks_alt += f", Kode Pos: {kode_pos}"
+                        
+                        self.cell(0, 6, teks_alt, align="C", new_x="LMARGIN", new_y="NEXT")
+                        
+                        # Garis kop surat
+                        y_pos = self.get_y() + 2
+                        self.set_line_width(0.8)
+                        self.line(10, y_pos, 200, y_pos)
+                        self.set_line_width(0.2)
+                        self.line(10, y_pos + 1.2, 200, y_pos + 1.2)
+                        
+                        self.ln(10)
+                    else:
+                        # Memberikan jarak margin atas pada halaman kedua dan seterusnya
+                        # agar tabel tidak menabrak ujung atas kertas
+                        self.ln(15)
 
             pdf = PDF()
             pdf.add_page()
@@ -270,7 +276,7 @@ if st.button("🖨️ Cetak ke PDF Resmi Sekarang", type="primary", width="stret
                     judul_laporan = "LAPORAN STATISTIK DEMOGRAFI TINGKAT RW" if role == "admin_rw" else "LAPORAN MASTER DEMOGRAFI TINGKAT DESA"
                     pdf.cell(0, 10, judul_laporan, align="C", new_x="LMARGIN", new_y="NEXT")
                     pdf.set_font("helvetica", "", 11)
-                    cakupan = f"RW {rw_akses}" if role == "admin_rw" else "SELURUH DESA"
+                    cakupan = f"RW {rw_akses}" if role == "admin_rw" else "SATU DESA"
                     pdf.cell(0, 6, f"WILAYAH CAKUPAN: {cakupan}", align="C", new_x="LMARGIN", new_y="NEXT")
                     pdf.ln(5)
 

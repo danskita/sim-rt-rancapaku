@@ -95,7 +95,7 @@ with st.form("form_profil_rw"):
         else:
             with st.spinner("Sedang merakit profil dan menyebar data sinkronisasi..."):
                 try:
-                    # A. Menyiapkan Data Profil
+                    # A. Menyiapkan Data Profil (TANPA MEMAKSA KOLOM RT DAN RW)
                     data_rw_update = {
                         "nama_rt_rw": nama_target_rw,
                         "kelurahan": desa_kelurahan.title().strip(),
@@ -103,9 +103,7 @@ with st.form("form_profil_rw"):
                         "kota": kota.title().strip(),
                         "kode_pos": kode_pos.strip(),
                         "alamat_sekretariat": alamat_sekretariat.title().strip(),
-                        "nama_ketua_rt": nama_ketua_rw.title().strip(),
-                        "rw": rw_terpilih,
-                        "rt": "000" if nama_target_rw == "TINGKAT DESA" else ""
+                        "nama_ketua_rt": nama_ketua_rw.title().strip()
                     }
                     
                     # B. Simpan atau Perbarui Profil
@@ -146,9 +144,7 @@ with st.form("form_profil_rw"):
                                     "kota": kota.title().strip(),
                                     "kode_pos": kode_pos.strip(),
                                     "alamat_sekretariat": alamat_sekretariat.title().strip(), 
-                                    "nama_ketua_rt": f"Ketua RT {rt_str}",
-                                    "rt": rt_str,        
-                                    "rw": rw_terpilih    
+                                    "nama_ketua_rt": f"Ketua RT {rt_str}"
                                 }
                                 supabase.table("profil_rt").insert(data_rt_baru).execute()
                             
