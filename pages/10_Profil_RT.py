@@ -2,20 +2,24 @@ import streamlit as st
 from supabase import create_client, Client
 from menu import tampilkan_menu
 
+# 1. ATURAN STREAMLIT: set_page_config HARUS PALING ATAS!
+st.set_page_config(page_title="Profil Wilayah", page_icon="🏢", layout="centered")
+
 # --- KONEKSI KE SUPABASE ---
 url: str = st.secrets["supabase"]["url"]
 key: str = st.secrets["supabase"]["key"]
 supabase: Client = create_client(url, key)
-tampilkan_menu()
 # ---------------------------
 
-# Gembok Keamanan
-if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
+# 2. GEMBOK KEAMANAN MULTI-USER (Sistem Baru)
+if "role" not in st.session_state:
     st.warning("⚠️ Akses Ditolak! Silakan login melalui halaman utama terlebih dahulu.")
     st.stop()
 
-st.set_page_config(page_title="Profil Wilayah", page_icon="🏢", layout="centered")
+# 3. TAMPILKAN MENU SIDEBAR
+tampilkan_menu()
 
+# Variabel Sesi Akses
 role = st.session_state.get("role", "operator_rt")
 rt_akses = st.session_state.get("rt_akses", "001")
 rw_akses = st.session_state.get("rw_akses", "001")
@@ -86,7 +90,8 @@ with st.form("form_profil_rw"):
                         "kota": kota.title().strip(),
                         "kode_pos": kode_pos.strip(),
                         "alamat_sekretariat": alamat_sekretariat.title().strip(),
-                        "nama_ketua_rt": nama_ketua_rw.title().strip()
+                        "nama_ketua_rt": nama_ketua_rw.title().strip(),
+                        "rw": rw_terpilih # Tambahan: pastikan kolom rw terisi agar filter PDF berjalan mulus
                     }
                     
                     # B. Simpan atau Perbarui Profil RW
@@ -105,7 +110,6 @@ with st.form("form_profil_rw"):
                         
                         if res_rt.data:
                             # Jika RT sudah ada, KITA HANYA UPDATE DESA/KECAMATAN/KOTA SAJA.
-                            # Kita TIDAK menimpa Nama Ketua RT-nya agar data spesifik mereka tidak hilang.
                             supabase.table("profil_rt").update({
                                 "kelurahan": desa_kelurahan.title().strip(),
                                 "kecamatan": kecamatan.title().strip(),
@@ -120,11 +124,14 @@ with st.form("form_profil_rw"):
                                 "kecamatan": kecamatan.title().strip(),
                                 "kota": kota.title().strip(),
                                 "kode_pos": kode_pos.strip(),
-                                "alamat_sekretariat": alamat_sekretariat.title().strip(), # Turunan dari alamat RW
-                                "nama_ketua_rt": f"Ketua RT {rt_str}" # Placeholder sementara
+                                "alamat_sekretariat": alamat_sekretariat.title().strip(), 
+                                "nama_ketua_rt": f"Ketua RT {rt_str}",
+                                "rt": rt_str,        # Tambahan: mengisi kolom rt untuk filter
+                                "rw": rw_terpilih    # Tambahan: mengisi kolom rw untuk filter
                             }
                             supabase.table("profil_rt").insert(data_rt_baru).execute()
                             
                     st.success(f"✅ Sempurna! Profil **{nama_target_rw}** berhasil disimpan. Data Desa/Kelurahan telah otomatis didistribusikan ke RT 001 hingga RT 005.")
+                    st.cache_data.clear() # Membersihkan cache agar Dashboard langsung ganti nama Desa!
                 except Exception as e:
                     st.error(f"⚠️ Terjadi kesalahan saat sinkronisasi profil: {e}")

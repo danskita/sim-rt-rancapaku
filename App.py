@@ -2,14 +2,35 @@ import streamlit as st
 from supabase import create_client, Client
 from menu import tampilkan_menu
 
+# 1. ATURAN STREAMLIT: set_page_config HARUS PALING ATAS!
+st.set_page_config(page_title="SIM Desa / RW", page_icon="🏛️", layout="centered")
+
 # --- KONEKSI KE SUPABASE ---
 url: str = st.secrets["supabase"]["url"]
 key: str = st.secrets["supabase"]["key"]
 supabase: Client = create_client(url, key)
-tampilkan_menu()
 # ---------------------------
 
-st.set_page_config(page_title="SIM Desa / RW", page_icon="🏛️", layout="centered")
+# ==========================================
+# PENYEDOT NAMA DESA OTOMATIS DARI PROFIL
+# ==========================================
+@st.cache_data(ttl=60)
+def ambil_nama_instansi():
+    try:
+        # Sedot 1 data profil saja dari database
+        res = supabase.table("profil_rt").select("desa, kelurahan").limit(1).execute()
+        
+        if len(res.data) > 0:
+            # Cek apakah kolom desa atau kelurahan yang terisi
+            nama_desa = res.data[0].get("desa") or res.data[0].get("kelurahan")
+            if nama_desa:
+                return f"Pemerintah Desa/Kelurahan {nama_desa.title()}"
+    except Exception:
+        pass
+    
+    # Jika profil masih kosong di database, gunakan nama default ini
+    return "Sistem Informasi Manajemen Warga"
+# ==========================================
 
 def check_password():
     """Mengecek kredensial login langsung ke database Supabase"""
@@ -58,12 +79,17 @@ def check_password():
     return True
 
 if check_password():
+    # Menampilkan Sidebar Menu HANYA JIKA SUDAH BERHASIL LOGIN
+    tampilkan_menu()
+
     # --- TAMPILAN SETELAH BERHASIL LOGIN ---
     st.success(f"✅ Login Berhasil! Selamat datang, **{st.session_state['nama_wilayah']}**")
     
-    st.title("🏛️ Sistem Informasi Manajemen Warga")
+    # MEMANGGIL FUNGSI PENYEDOT NAMA DESA UNTUK JUDUL UTAMA
+    nama_instansi_dinamis = ambil_nama_instansi()
+    st.title(f"🏛️ {nama_instansi_dinamis}")
     
-    # Menampilkan sapaan yang dinamis dan spesifik
+    # Menampilkan sapaan yang dinamis dan spesifik sesuai Role
     if st.session_state["role"] == "super_admin":
         st.info("👋 Anda login sebagai **Super Admin (Desa)**. Anda memiliki akses untuk memantau seluruh data dari 10 RW dan 45 RT.")
     elif st.session_state["role"] == "admin_rw":

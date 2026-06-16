@@ -5,19 +5,26 @@ import datetime
 from supabase import create_client, Client
 from menu import tampilkan_menu
 
+# Aturan Streamlit: set_page_config harus dipanggil paling awal
+st.set_page_config(page_title="Pengaturan Sistem", page_icon="⚙️", layout="centered")
+
 # --- KONEKSI KE SUPABASE ---
 url: str = st.secrets["supabase"]["url"]
 key: str = st.secrets["supabase"]["key"]
 supabase: Client = create_client(url, key)
-tampilkan_menu()
-# ---------------------------
 
-# Gembok Keamanan
-if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
+# Gembok Keamanan Berlapis (HANYA KEPALA DESA / SUPER ADMIN)
+if "role" not in st.session_state:
     st.warning("⚠️ Akses Ditolak! Silakan login melalui halaman utama terlebih dahulu.")
     st.stop()
 
-st.set_page_config(page_title="Pengaturan Sistem", page_icon="⚙️", layout="centered")
+if st.session_state["role"] != "super_admin":
+    st.error("⛔ AKSES DITOLAK! Halaman 'Pengaturan Sistem' ini hanya boleh diakses oleh Kepala Desa (Super Admin).")
+    st.stop()
+
+# Tampilkan menu setelah dipastikan dia adalah Super Admin
+tampilkan_menu()
+# ---------------------------
 
 st.title("⚙️ Pengaturan & Pemeliharaan Sistem")
 st.markdown("Halaman khusus administrator untuk melakukan pencadangan (Backup), reset, dan pemulihan data (Restore).")
@@ -97,7 +104,6 @@ with tab_reset:
                         supabase.table("data_datang").delete().neq("id_datang", "0").execute()
                         supabase.table("data_bansos").delete().neq("id_bansos", "0").execute()
                         supabase.table("data_surat").delete().neq("id_surat", "0").execute()
-                        # Gunakan nama kolom yang sudah Anda perbaiki sebelumnya (misal: nama_aset atau id_aset)
                         supabase.table("data_aset").delete().neq("id_aset", 0).execute() 
                         
                         supabase.table("data_penduduk").delete().neq("nik", "0").execute()
@@ -120,7 +126,6 @@ with tab_restore:
         if st.button("Mulai Proses Restore", type="primary"):
             with st.spinner("Sedang merakit ulang database Anda... Mohon tunggu!"):
                 try:
-                    # Membaca seluruh sheet di file Excel
                     xls = pd.read_excel(file_backup_upload, sheet_name=None, engine='openpyxl')
                     
                     # URUTAN SANGAT PENTING: Master (Penduduk) & Standalone (Aset) masuk duluan agar tidak error Foreign Key
@@ -139,20 +144,16 @@ with tab_restore:
                         if nama_sheet in xls:
                             df = xls[nama_sheet]
                             if not df.empty:
-                                # 1. Bersihkan NIK/KK dari format desimal bawaan Excel (123.0 menjadi 123)
                                 if 'nik' in df.columns:
                                     df['nik'] = df['nik'].astype(str).str.replace(r'\.0$', '', regex=True)
                                 if 'no_kk' in df.columns:
                                     df['no_kk'] = df['no_kk'].astype(str).str.replace(r'\.0$', '', regex=True)
                                 
-                                # 2. Ubah format datetime menjadi teks tanggal YYYY-MM-DD
                                 for col in df.select_dtypes(include=['datetime64']).columns:
                                     df[col] = df[col].dt.strftime('%Y-%m-%d')
                                 
-                                # 3. Ubah kolom kosong (NaN) menjadi None agar dikenali sebagai NULL di Supabase
                                 df = df.where(pd.notnull(df), None)
                                 
-                                # 4. Masukkan data ke Supabase
                                 records = df.to_dict(orient='records')
                                 supabase.table(nama_tabel).insert(records).execute()
                                 

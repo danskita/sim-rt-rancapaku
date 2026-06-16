@@ -25,7 +25,6 @@ def tampilkan_menu():
         st.sidebar.page_link("pages/5_Data_Aset.py", label="Sarpras & Aset", icon="🏢")
         st.sidebar.page_link("pages/7_Kelola_Data.py", label="Kelola Data Warga", icon="⚙️")
         st.sidebar.page_link("pages/8_Import_Data.py", label="Import Data Excel", icon="📥")
-        st.sidebar.page_link("pages/9_Cetak_PDF.py", label="Cetak Dokumen PDF", icon="🖨️")
 
     # 2. MENU KHUSUS ADMIN RW & KEPALA DESA
     elif role in ["admin_rw", "super_admin"]:
@@ -34,10 +33,19 @@ def tampilkan_menu():
         st.sidebar.page_link("pages/10_Profil_RT.py", label="Profil Wilayah", icon="🏢")
         st.sidebar.page_link("pages/12_Manajemen_Akun.py", label="Manajemen Akun", icon="🔐")
         st.sidebar.page_link("pages/11_Pengaturan_Sistem.py", label="Pengaturan Sistem", icon="⚠️")
-        st.sidebar.page_link("pages/13_Cetak_Laporan_PDF.py", label="Cetak Laporan", icon="🖨️")
+
+    # =========================================================
+    # 3. MENU PUSAT CETAK (DIBUKA UNTUK SEMUA ROLE)
+    # Karena berada di luar if-elif, menu ini akan otomatis 
+    # muncul di sidebar Kepala Desa, Ketua RW, dan Ketua RT!
+    # =========================================================
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("🖨️ Pusat Cetak Dokumen")
+    st.sidebar.page_link("pages/9_Cetak_PDF.py", label="Cetak Surat & Kegiatan", icon="✉️")
+    st.sidebar.page_link("pages/13_Cetak_Laporan_PDF.py", label="Cetak Laporan Massal", icon="📊")
 
     # Tombol Logout (Berlaku untuk semua)
     st.sidebar.markdown("---")
-    if st.sidebar.button("🚪 Logout dari Sistem", use_container_width=True):
+    if st.sidebar.button("🚪 Logout dari Sistem", use_container_width=True, key="tombol_logout_unik"): 
         st.session_state.clear()
         st.switch_page("App.py")
