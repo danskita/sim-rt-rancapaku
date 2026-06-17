@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np # WAJIB DITAMBAHKAN UNTUK PEMBERSIH NaN
 import math
 import io
 from supabase import create_client, Client
@@ -12,14 +13,17 @@ supabase: Client = create_client(url, key)
 tampilkan_menu()
 # ---------------------------
 
-# Gembok Keamanan
+# Gembok Keamanan Umum
 if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
     st.warning("⚠️ Akses Ditolak! Silakan login melalui halaman utama terlebih dahulu.")
     st.stop()
-# GEMBOK KHUSUS: Hanya Operator RT yang boleh masuk untuk input/edit/hapus data
+
+# --- PERBAIKAN 1: BUKA GEMBOK UNTUK ADMIN DESA ---
+# Kini Operator RT dan Kepala Desa (super_admin) diizinkan melakukan Import masal. 
+# Hanya Admin RW yang kita blokir (atau hapus blok ini jika RW juga diizinkan).
 role = st.session_state.get("role", "")
-if role in ["admin_rw", "super_admin"]:
-    st.error("⛔ Akses Ditolak! Halaman ini adalah wewenang mutlak Pengurus RT. Anda (RW/Desa) hanya memiliki akses untuk melihat rekap data pada menu Cetak Laporan.")
+if role == "admin_rw":
+    st.error("⛔ Akses Ditolak! Halaman Import Data adalah wewenang Pengurus RT dan Admin Desa.")
     st.stop()
 
 st.set_page_config(page_title="Import Data", page_icon="📥", layout="centered")
@@ -62,6 +66,24 @@ if uploaded_file is not None:
         # Membaca file Excel
         df = pd.read_excel(uploaded_file)
         
+        # >>> SOLUSI PAMUNGKAS 1: PAKSA SEMUA JUDUL KOLOM JADI HURUF KECIL & HAPUS SPASI <<<
+        df.columns = df.columns.str.strip().str.lower()
+        
+        # >>> SOLUSI PAMUNGKAS 2: KAMUS PENERJEMAH KOLOM (EXCEL -> DATABASE) <<<
+        # Menyamakan judul kolom Excel yang ada spasinya ke standar Supabase
+        kamus_kolom = {
+            'no. kk': 'no_kk',
+            'nama lengkap': 'nama_lengkap',
+            'tempat lahir': 'tempat_lahir',
+            'tanggal lahir (yyyy-mm-dd)': 'tanggal_lahir',
+            'jenis kelamin': 'jenis_kelamin',
+            'golongan darah': 'golongan_darah',
+            'pendidikan terakhir': 'pendidikan',
+            'status perkawinan': 'status_perkawinan',
+            'jalan / kampung / perumahan': 'jalan_kampung'
+        }
+        df = df.rename(columns=kamus_kolom)
+        
         # 1. PEMBERSIH NIK & KK: Pastikan dibaca sebagai teks utuh tanpa koma nol (.0)
         if 'nik' in df.columns:
             df['nik'] = df['nik'].astype(str).str.replace(r'\.0$', '', regex=True)
@@ -74,16 +96,19 @@ if uploaded_file is not None:
         if 'rw' in df.columns:
             df['rw'] = df['rw'].astype(str).str.replace(r'\.0$', '', regex=True).str.zfill(3)
 
-        # 3. PENERJEMAH TANGGAL: Sesuaikan format tanggal ke standar Supabase (YYYY-MM-DD)
+        # 3. PENERJEMAH TANGGAL: Menggunakan format='mixed' agar Pandas tidak protes saat melihat variasi format
         if 'tanggal_lahir' in df.columns:
-            df['tanggal_lahir'] = pd.to_datetime(df['tanggal_lahir'], dayfirst=True, errors='coerce').dt.strftime('%Y-%m-%d')
+            df['tanggal_lahir'] = pd.to_datetime(df['tanggal_lahir'], format='mixed', dayfirst=True, errors='coerce').dt.strftime('%Y-%m-%d')
+        # >>> SOLUSI PAMUNGKAS 3: SAPU BERSIH DATA KOSONG <<<
+        # Menggunakan metode yang lebih aman dari Numpy untuk mencegah error JSON
+        df = df.where(pd.notnull(df), None)
 
         # Tampilkan preview data yang sudah dirapikan kepada pengguna
         st.write("Preview Data yang siap diimpor:")
         st.dataframe(df)
 
         # Tombol untuk mengeksekusi import ke database Supabase
-        if st.button("🚀 Mulai Import ke Database", use_container_width=True):
+        if st.button("🚀 Mulai Import ke Database", width="stretch"):
             with st.spinner("Sedang menyimpan data ke cloud..."):
                 # Konversi dataframe Pandas menjadi format dictionary untuk Supabase
                 data_import = df.to_dict(orient="records")

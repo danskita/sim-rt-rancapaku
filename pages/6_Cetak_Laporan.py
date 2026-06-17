@@ -62,10 +62,13 @@ def get_data(nama_tabel):
             query = query.eq("rt", filter_rt)
             
     res = query.execute()
-    return pd.DataFrame(res.data) if res.data else pd.DataFrame()
+    df = pd.DataFrame(res.data) if res.data else pd.DataFrame()
+    
+    # PENYELESAIAN PERMANEN: Menormalkan nama kolom jadi huruf kecil agar kebal error
+    if not df.empty:
+        df.columns = df.columns.str.lower()
         
-    res = query.execute()
-    return pd.DataFrame(res.data) if res.data else pd.DataFrame()
+    return df
 
 with st.spinner("Menyiapkan laporan khusus wilayah Anda..."):
     df_penduduk = get_data("data_penduduk")
@@ -87,8 +90,14 @@ else:
     st.subheader("📈 Ringkasan Penduduk")
     
     total_warga = len(df_penduduk)
-    total_l = len(df_penduduk[df_penduduk['jenis_kelamin'] == 'Laki-laki'])
-    total_p = len(df_penduduk[df_penduduk['jenis_kelamin'] == 'Perempuan'])
+
+    # Cek dulu apakah tabelnya ada isinya dan kolomnya tersedia
+    if not df_penduduk.empty and 'jenis_kelamin' in df_penduduk.columns:
+        total_l = len(df_penduduk[df_penduduk['jenis_kelamin'] == 'Laki-laki'])
+        total_p = len(df_penduduk[df_penduduk['jenis_kelamin'] == 'Perempuan'])
+    else:
+        total_l = 0
+        total_p = 0
     
     col1, col2, col3 = st.columns(3)
     col1.metric("Total Warga", total_warga)
@@ -99,14 +108,22 @@ else:
     
     col_chart1, col_chart2 = st.columns(2)
     with col_chart1:
-        fig_gender = px.pie(df_penduduk, names='jenis_kelamin', title='Proporsi Jenis Kelamin', hole=0.4)
-        st.plotly_chart(fig_gender, width='stretch')
+        # Pengecekan sebelum membuat diagram Pie
+        if 'jenis_kelamin' in df_penduduk.columns and not df_penduduk['jenis_kelamin'].isna().all():
+            fig_gender = px.pie(df_penduduk, names='jenis_kelamin', title='Proporsi Jenis Kelamin', hole=0.4)
+            st.plotly_chart(fig_gender, width="stretch")
+        else:
+            st.info("Data jenis kelamin belum tersedia untuk membuat grafik.")
+            
     with col_chart2:
-        if 'agama' in df_penduduk.columns:
+        # Pengecekan sebelum membuat diagram Bar Agama
+        if 'agama' in df_penduduk.columns and not df_penduduk['agama'].isna().all():
             agama_count = df_penduduk['agama'].value_counts().reset_index()
             agama_count.columns = ['Agama', 'Jumlah']
             fig_agama = px.bar(agama_count, x='Agama', y='Jumlah', title='Distribusi Agama')
-            st.plotly_chart(fig_agama, width='stretch')
+            st.plotly_chart(fig_agama, width="stretch")
+        else:
+            st.info("Data agama belum tersedia untuk membuat grafik.")
 
     st.markdown("---")
     
@@ -118,24 +135,22 @@ else:
     tab1, tab2, tab3, tab4 = st.tabs(["👥 Data Penduduk", "🔄 Laporan LAMPID", "📦 Bansos & Surat", "🏢 Aset RT"])
     
     with tab1:
-        st.dataframe(df_penduduk, width='stretch')
+        st.dataframe(df_penduduk, width="stretch")
         csv_penduduk = df_penduduk.to_csv(index=False).encode('utf-8')
         st.download_button("📥 Unduh CSV Penduduk", data=csv_penduduk, file_name=f"Data_Penduduk_{filter_rw}_{filter_rt}.csv", mime="text/csv")
         
     with tab2:
         st.markdown("**Bayi Lahir**")
-        st.dataframe(df_lahir, width='stretch')
+        st.dataframe(df_lahir, width="stretch")
         st.markdown("**Warga Meninggal**")
-        st.dataframe(df_mati, width='stretch')
+        st.dataframe(df_mati, width="stretch")
         
     with tab3:
         st.markdown("**Riwayat Penerima Bansos**")
-        st.dataframe(df_bansos, width='stretch')
+        st.dataframe(df_bansos, width="stretch")
         st.markdown("**Riwayat Permohonan Surat**")
-        st.dataframe(df_surat, width='stretch')
+        st.dataframe(df_surat, width="stretch")
         
     with tab4:
-        # Aset RT diambil semua karena biasanya aset adalah milik bersama (Tingkat RW/Desa)
-        # Tapi jika Anda ingin filter aset per RT, Anda bisa menambahkan logika filter_rt nanti
-        df_aset = pd.DataFrame(supabase.table("data_aset").select("*").execute().data)
-        st.dataframe(df_aset, width='stretch')
+        df_aset = get_data("data_aset")
+        st.dataframe(df_aset, width="stretch")
