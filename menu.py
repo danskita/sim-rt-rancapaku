@@ -16,11 +16,9 @@ def tampilkan_menu():
     st.sidebar.markdown("---")
 
     # 1. MENU KHUSUS OPERATOR RT
-    
     if role == "operator_rt":
         st.sidebar.subheader("📋 Menu Operasional")
-        st.sidebar.page_link("pages/0_Dashboard.py", label="Dashboard Utama", icon="📊") # <--- TAMBAHKAN BARIS INI
-
+        st.sidebar.page_link("pages/0_Dashboard.py", label="Dashboard Utama", icon="📊")
         st.sidebar.page_link("pages/1_Data_Penduduk.py", label="Data Penduduk", icon="👥")
         st.sidebar.page_link("pages/2_Data_Lampid.py", label="Data Lampid", icon="🔄")
         st.sidebar.page_link("pages/3_Data_Bansos.py", label="Data Bansos", icon="📦")
@@ -36,7 +34,7 @@ def tampilkan_menu():
         st.sidebar.page_link("pages/6_Cetak_Laporan.py", label="Dashboard & Laporan", icon="📊")
         st.sidebar.page_link("pages/10_Profil_RT.py", label="Profil Wilayah", icon="🏢")
         st.sidebar.page_link("pages/12_Manajemen_Akun.py", label="Manajemen Akun", icon="🔐")
-        
+        st.sidebar.page_link("pages/15_Data_Arsip.py", label="Arsip Digital", icon="🗂️") # <--- TAMBAHKAN BARIS INI
         
         # --- SINKRONISASI PENGATURAN RW vs DESA ---
         if role == "super_admin":
