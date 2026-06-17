@@ -44,9 +44,11 @@ with tab_daftar:
         df_admin = pd.DataFrame(res.data)
         
         if not df_admin.empty:
-            df_tampil = df_admin[['nama_wilayah', 'username', 'role', 'rt_akses', 'rw_akses']]
-            # Perbaikan peringatan width
-            st.dataframe(df_tampil, width='stretch')
+            # 💡 PERBAIKAN: Kolom 'password' telah ditambahkan kembali ke dalam daftar ini
+            df_tampil = df_admin[['nama_wilayah', 'username', 'password', 'role', 'rt_akses', 'rw_akses']]
+            
+            # Menampilkan tabel
+            st.dataframe(df_tampil, width="stretch")
             
             st.markdown("---")
             st.markdown("### 🗑️ Hapus Akun")
