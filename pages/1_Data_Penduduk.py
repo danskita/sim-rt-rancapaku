@@ -68,7 +68,18 @@ with st.form("form_penduduk", clear_on_submit=True):
     with col_sos1:
         agama = st.selectbox("Agama *", ["Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Konghucu", "Kepercayaan Lainnya"])
         pendidikan = st.selectbox("Pendidikan Terakhir", ["Tidak/Belum Sekolah", "Belum Tamat SD/Sederajat", "Tamat SD/Sederajat", "SLTP/Sederajat", "SLTA/Sederajat", "Diploma I/II", "Akademi/Diploma III/S.Muda", "Diploma IV/Strata I", "Strata II", "Strata III"])
-        pekerjaan_input = st.text_input("Pekerjaan")
+        
+        # --- PERBAIKAN: Mengubah Pekerjaan menjadi Dropdown ---
+        daftar_pekerjaan = [
+            "Belum/Tidak Bekerja", "Mengurus Rumah Tangga", "Pelajar/Mahasiswa", "Pensiunan",
+            "Pegawai Negeri Sipil (PNS)", "Tentara Nasional Indonesia (TNI)", "Kepolisian RI (POLRI)", 
+            "Karyawan Swasta", "Karyawan BUMN/BUMD", "Karyawan Honorer", "Wiraswasta", "Pedagang", 
+            "Petani/Pekebun", "Peternak", "Nelayan/Perikanan", "Buruh Harian Lepas", "Buruh Tani/Perkebunan", 
+            "Sopir", "Pembantu Rumah Tangga", "Dosen", "Guru", "Dokter", "Bidan", "Perawat", 
+            "Pengacara", "Seniman", "Perangkat Desa", "Kepala Desa", "Lainnya"
+        ]
+        pekerjaan_input = st.selectbox("Pekerjaan", daftar_pekerjaan)
+        
     with col_sos2:
         status_perkawinan = st.selectbox("Status Perkawinan *", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"])
         shdk = st.selectbox("Status Hub. Dalam Keluarga (SHDK) *", ["Kepala Keluarga", "Suami", "Istri", "Anak", "Menantu", "Cucu", "Orang Tua", "Mertua", "Famili Lain", "Pembantu", "Lainnya"])
