@@ -22,7 +22,7 @@ tampilkan_menu()
 # ---------------------------
 
 st.title("🖨️ Pusat Cetak Dokumen Resmi")
-st.markdown("Cetak Surat Pengantar, Undangan Rapat, hingga Laporan Kegiatan dengan **Kop Surat Standar Pemerintahan**.")
+st.markdown("Cetak Surat Pengantar, Undangan Rapat, hingga Laporan Kegiatan dengan **Kop Surat Standar Pemerintahan**. Salinan dokumen akan **Otomatis Diarsipkan** ke database Anda.")
 
 # ==========================================
 # MENGAMBIL DATA PROFIL YANG SINKRON
@@ -30,6 +30,20 @@ st.markdown("Cetak Surat Pengantar, Undangan Rapat, hingga Laporan Kegiatan deng
 role = st.session_state.get("role", "operator_rt")
 rt_akses = st.session_state.get("rt_akses", "001")
 rw_akses = st.session_state.get("rw_akses", "001")
+
+# Penentuan Variabel Tingkat untuk Auto-Arsip
+if role == "super_admin":
+    tingkat_aktif = "Desa"
+    filter_rt = "-"
+    filter_rw = "-"
+elif role == "admin_rw":
+    tingkat_aktif = "RW"
+    filter_rt = "-"
+    filter_rw = rw_akses
+else:
+    tingkat_aktif = "RT"
+    filter_rt = rt_akses
+    filter_rw = rw_akses
 
 @st.cache_data(ttl=5)
 def load_profil_sinkron(role, rt_akses, rw_akses):
@@ -180,8 +194,8 @@ with tab_pengantar:
                 paragraf_2 = f"Orang tersebut di atas adalah benar warga yang berdomisili di lingkungan RT {rt_akses} / RW {rw_akses}. Surat pengantar ini dibuat untuk keperluan: {keperluan}."
                 jenis_dokumen = "Surat Pengantar"
             
-            if st.button(f"📄 Rangkai {jenis_dokumen}", type="primary", width="stretch"):
-                with st.spinner("Merangkai PDF..."):
+            if st.button(f"🖨️ Cetak & Otomatis Arsipkan {jenis_dokumen}", type="primary", width="stretch"):
+                with st.spinner("Merangkai PDF dan Menyimpan ke Arsip Digital..."):
                     pdf = PDFMaster()
                     pdf.add_page()
 
@@ -236,9 +250,37 @@ with tab_pengantar:
                     pdf.set_x(120)
                     pdf.cell(w=60, h=6, text=nama_pejabat, align="C", new_x="LMARGIN", new_y="NEXT")
 
-                    st.session_state["pdf_pengantar"] = bytes(pdf.output())
+                    # Simpan bytes PDF
+                    pdf_bytes = bytes(pdf.output())
+                    st.session_state["pdf_pengantar"] = pdf_bytes
                     st.session_state["nama_file_pengantar"] = f"{jenis_dokumen.replace(' ', '_')}_{warga.get('nik', '')}.pdf"
-                    st.success(f"✅ {jenis_dokumen} berhasil dirangkai! Silakan unduh.")
+                    
+                    # --- EKSEKUSI AUTO-ARSIP ---
+                    try:
+                        waktu_sekarang = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                        nama_file_arsip = f"Surat_Keluar_{tingkat_aktif}_{waktu_sekarang}.pdf"
+                        
+                        # Upload ke Supabase
+                        supabase.storage.from_("arsip_digital").upload(
+                            path=nama_file_arsip, file=pdf_bytes, file_options={"content-type": "application/pdf"}
+                        )
+                        url_publik = supabase.storage.from_("arsip_digital").get_public_url(nama_file_arsip)
+                        
+                        # Simpan ke tabel
+                        data_arsip = {
+                            "tanggal": datetime.date.today().strftime("%Y-%m-%d"),
+                            "jenis": "Surat Keluar",
+                            "judul": f"{jenis_dokumen} - {warga.get('nama_lengkap', '')}",
+                            "keterangan": f"Keperluan: {keperluan}",
+                            "url_file": url_publik,
+                            "tingkat": tingkat_aktif,
+                            "rt": filter_rt,
+                            "rw": filter_rw
+                        }
+                        supabase.table("data_arsip").insert(data_arsip).execute()
+                        st.success(f"✅ {jenis_dokumen} berhasil dirangkai dan salinan otomatis tersimpan di Arsip Digital!")
+                    except Exception as err:
+                        st.warning(f"✅ Dokumen berhasil dirangkai, namun gagal Auto-Arsip: {err}")
 
             if "pdf_pengantar" in st.session_state:
                 st.download_button(label=f"📥 Download Dokumen PDF", data=st.session_state["pdf_pengantar"], file_name=st.session_state["nama_file_pengantar"], mime="application/pdf", width="stretch")
@@ -269,10 +311,10 @@ with tab_undangan:
             tempat_acara = st.text_input("Tempat Pelaksanaan", value="Posko / Balai Pertemuan")
             agenda = st.text_input("Agenda / Acara", value="Membahas Keamanan & Ketertiban Lingkungan")
             
-        submit_undangan = st.form_submit_button("📄 Rangkai Dokumen Undangan", type="primary", width="stretch")
+        submit_undangan = st.form_submit_button("🖨️ Cetak & Otomatis Arsipkan Undangan", type="primary", width="stretch")
         
     if submit_undangan:
-        with st.spinner("Memproses Surat Undangan..."):
+        with st.spinner("Memproses Surat Undangan dan Menyimpan ke Arsip..."):
             pdf = PDFMaster()
             pdf.add_page()
             
@@ -331,8 +373,33 @@ with tab_undangan:
             pdf.set_x(120)
             pdf.cell(w=60, h=6, text=nama_pejabat, align="C", new_x="LMARGIN", new_y="NEXT")
             
-            st.session_state["pdf_undangan"] = bytes(pdf.output())
-            st.success("✅ Surat Undangan berhasil dirangkai! Silakan unduh.")
+            pdf_bytes = bytes(pdf.output())
+            st.session_state["pdf_undangan"] = pdf_bytes
+            
+            # --- EKSEKUSI AUTO-ARSIP ---
+            try:
+                waktu_sekarang = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                nama_file_arsip = f"Undangan_{tingkat_aktif}_{waktu_sekarang}.pdf"
+                
+                supabase.storage.from_("arsip_digital").upload(
+                    path=nama_file_arsip, file=pdf_bytes, file_options={"content-type": "application/pdf"}
+                )
+                url_publik = supabase.storage.from_("arsip_digital").get_public_url(nama_file_arsip)
+                
+                data_arsip = {
+                    "tanggal": datetime.date.today().strftime("%Y-%m-%d"),
+                    "jenis": "Undangan",
+                    "judul": f"Undangan: {perihal}",
+                    "keterangan": f"Agenda: {agenda} | Tgl: {tgl_acara.strftime('%d/%m/%Y')}",
+                    "url_file": url_publik,
+                    "tingkat": tingkat_aktif,
+                    "rt": filter_rt,
+                    "rw": filter_rw
+                }
+                supabase.table("data_arsip").insert(data_arsip).execute()
+                st.success("✅ Surat Undangan berhasil dirangkai dan salinan otomatis tersimpan di Arsip Digital!")
+            except Exception as err:
+                st.warning(f"✅ Undangan berhasil dirangkai, namun gagal Auto-Arsip: {err}")
 
     if "pdf_undangan" in st.session_state:
         st.download_button(label="📥 Download Surat Undangan", data=st.session_state["pdf_undangan"], file_name="Surat_Undangan.pdf", mime="application/pdf", width="stretch")
@@ -355,10 +422,10 @@ with tab_kegiatan:
         deskripsi = st.text_area("Deskripsi / Rangkaian Kegiatan", value="1. Pembersihan area publik.\n2. Pemangkasan ranting pohon rawan tumbang.", height=120)
         hasil = st.text_area("Hasil yang Dicapai / Notulensi", value="Lingkungan menjadi lebih bersih. Kegiatan berjalan dengan lancar.", height=120)
         
-        submit_laporan = st.form_submit_button("📄 Rangkai Dokumen Laporan", type="primary", width="stretch")
+        submit_laporan = st.form_submit_button("🖨️ Cetak & Otomatis Arsipkan Laporan", type="primary", width="stretch")
         
     if submit_laporan:
-        with st.spinner("Memproses Laporan Kegiatan..."):
+        with st.spinner("Memproses Laporan Kegiatan dan Menyimpan ke Arsip..."):
             pdf = PDFMaster()
             pdf.add_page()
             
@@ -410,8 +477,33 @@ with tab_kegiatan:
             pdf.set_x(120)
             pdf.cell(w=60, h=6, text=nama_pejabat, align="C", new_x="LMARGIN", new_y="NEXT")
             
-            st.session_state["pdf_laporan"] = bytes(pdf.output())
-            st.success("✅ Laporan Kegiatan berhasil dirangkai! Silakan unduh.")
+            pdf_bytes = bytes(pdf.output())
+            st.session_state["pdf_laporan"] = pdf_bytes
+            
+            # --- EKSEKUSI AUTO-ARSIP ---
+            try:
+                waktu_sekarang = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                nama_file_arsip = f"Laporan_{tingkat_aktif}_{waktu_sekarang}.pdf"
+                
+                supabase.storage.from_("arsip_digital").upload(
+                    path=nama_file_arsip, file=pdf_bytes, file_options={"content-type": "application/pdf"}
+                )
+                url_publik = supabase.storage.from_("arsip_digital").get_public_url(nama_file_arsip)
+                
+                data_arsip = {
+                    "tanggal": datetime.date.today().strftime("%Y-%m-%d"),
+                    "jenis": "Laporan Kegiatan",
+                    "judul": f"Laporan: {nama_kegiatan}",
+                    "keterangan": f"Pelaksanaan: {tgl_kegiatan.strftime('%d/%m/%Y')} di {tempat_kegiatan}",
+                    "url_file": url_publik,
+                    "tingkat": tingkat_aktif,
+                    "rt": filter_rt,
+                    "rw": filter_rw
+                }
+                supabase.table("data_arsip").insert(data_arsip).execute()
+                st.success("✅ Laporan Kegiatan berhasil dirangkai dan salinan otomatis tersimpan di Arsip Digital!")
+            except Exception as err:
+                st.warning(f"✅ Laporan berhasil dirangkai, namun gagal Auto-Arsip: {err}")
 
     if "pdf_laporan" in st.session_state:
         st.download_button(label="📥 Download Laporan Kegiatan", data=st.session_state["pdf_laporan"], file_name="Laporan_Kegiatan.pdf", mime="application/pdf", width="stretch")
