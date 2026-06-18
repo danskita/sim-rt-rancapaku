@@ -5,8 +5,39 @@ import os
 from supabase import create_client, Client
 from menu import tampilkan_menu
 
+
 # --- KONFIGURASI HALAMAN ---
 st.set_page_config(page_title="Forum Diskusi", page_icon="💬", layout="centered")
+
+# --- SUNTIKAN CSS UNTUK DESAIN WHATSAPP ---
+st.markdown("""
+    <style>
+    /* 1. Memberi ruang kosong di bawah agar pesan tidak tertutup kotak input */
+    .block-container {
+        padding-bottom: 150px !important;
+    }
+    
+    /* 2. Memaku (Fixed) kotak input ke dasar layar HP/Laptop */
+    div[data-testid="stForm"] {
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        max-width: 46rem; 
+        background-color: var(--secondary-background-color) !important; /* Otomatis menyesuaikan Dark/Light Mode */
+        padding: 15px 20px 15px 20px !important;
+        z-index: 999;
+        border-top: 2px solid var(--primary-color);
+        box-shadow: 0px -10px 20px rgba(0,0,0,0.2);
+        border-radius: 15px 15px 0 0;
+        height: max-content !important; /* Kunci ukuran form agar tidak melar menutupi layar */
+    }
+    
+    /* 3. Menyembunyikan footer bawaan Streamlit agar bersih */
+    footer {visibility: hidden;}
+    </style>
+""", unsafe_allow_html=True)
 
 # --- KONEKSI KE SUPABASE ---
 url: str = st.secrets["supabase"]["url"]
@@ -15,7 +46,7 @@ supabase: Client = create_client(url, key)
 
 # Gembok Keamanan
 if "role" not in st.session_state:
-    st.warning("⚠️ Akses Ditolak! Silakan login melalui halaman utama terlebih dahulu.")
+    st.warning("⚠️ Akses Ditolak! Silakan login terlebih dahulu.")
     st.stop()
 
 tampilkan_menu()
@@ -41,7 +72,6 @@ else:
 # ==========================================
 # 🟢 SISTEM PELACAK STATUS ONLINE 
 # ==========================================
-# 1. Update status diri sendiri setiap kali halaman dimuat/ditekan
 try:
     waktu_sekarang = datetime.now(timezone.utc).isoformat()
     supabase.table("status_online").upsert({
@@ -52,17 +82,14 @@ try:
 except Exception as e:
     pass
 
-# 2. Fungsi menarik data siapa saja yang online
 @st.cache_data(ttl=2)
 def muat_data_online():
     try:
         res = supabase.table("status_online").select("*").execute()
         df = pd.DataFrame(res.data)
         if not df.empty:
-            # Konversi waktu ke format yang bisa dihitung
             df['terakhir_aktif'] = pd.to_datetime(df['terakhir_aktif'])
-            waktu_kini = pd.Timestamp.now('UTC')
-            # Anggap "Online" jika aktif dalam 5 menit terakhir
+            waktu_kini = pd.Timestamp.now('UTC') 
             df['is_online'] = (waktu_kini - df['terakhir_aktif']).dt.total_seconds() <= 300
             return df[df['is_online'] == True]
     except:
@@ -72,10 +99,8 @@ def muat_data_online():
 df_online = muat_data_online()
 jumlah_online = len(df_online) if not df_online.empty else 1
 
-# Menampilkan Jendela "Siapa yang Online"
 with st.expander(f"🟢 Lihat Siapa yang Sedang Online ({jumlah_online} Orang)"):
     if not df_online.empty:
-        # Tampilkan Admin paling atas, lalu RW, lalu RT
         for _, baris in df_online.sort_values(by="role", ascending=False).iterrows():
             if baris['role'] == "super_admin": ikon = "🛡️"
             elif baris['role'] == "admin_rw": ikon = "👔"
@@ -94,7 +119,6 @@ with st.expander(f"🟢 Lihat Siapa yang Sedang Online ({jumlah_online} Orang)")
 @st.cache_data(ttl=2)
 def muat_obrolan():
     try:
-        # Menarik 50 pesan terakhir agar performa HP tetap ringan
         res = supabase.table("data_forum").select("*").order("waktu", desc=True).limit(50).execute()
         pesan_data = res.data if res.data else []
         pesan_data.reverse() 
@@ -102,12 +126,9 @@ def muat_obrolan():
     except:
         return []
 
-# Tata letak tombol segarkan (refresh)
 col_title, col_btn = st.columns([3, 1])
 with col_btn:
-    # PERBARUAN 1: Menggunakan use_container_width=True agar tombol proporsional
     if st.button("🔄 Segarkan", use_container_width=True):
-        # PERBARUAN 2: Hanya mereset memori chat, bukan memori seluruh aplikasi
         muat_obrolan.clear()
         st.rerun()
 
@@ -115,9 +136,10 @@ st.markdown("---")
 pesan_list = muat_obrolan()
 
 # ==========================================
-# KOTAK OBROLAN (DESAIN BUBBLE WHATSAPP)
+# KOTAK OBROLAN (LAYAR PENUH & DINAMIS)
 # ==========================================
-chat_container = st.container(height=450)
+# Tidak lagi menggunakan height statis, biarkan pesan mengalir ke bawah halaman
+chat_container = st.container()
 
 with chat_container:
     if not pesan_list:
@@ -130,12 +152,12 @@ with chat_container:
             
         is_me = (msg['pengirim'] == nama_pengirim)
         
-        bg_color = "#dcf8c6" if is_me else "#f1f0f0"
+        bg_color = "#dcf8c6" if is_me else "#ffffff"
         align_div = "flex-end" if is_me else "flex-start"
         
         bubble_html = f"""
         <div style='display: flex; justify-content: {align_div}; margin-bottom: 5px;'>
-            <div style='background-color: {bg_color}; color: black; border-radius: 12px; padding: 8px 15px; max-width: 80%; box-shadow: 1px 1px 3px rgba(0,0,0,0.1);'>
+            <div style='background-color: {bg_color}; color: black; border-radius: 12px; padding: 8px 15px; max-width: 80%; box-shadow: 1px 1px 3px rgba(0,0,0,0.1); border: 1px solid #eee;'>
                 <div style='font-size: 0.75em; color: gray; margin-bottom: 3px;'>{msg_avatar} <b>{msg['pengirim']}</b></div>
                 <div style='font-size: 1em; white-space: pre-wrap;'>{msg.get('pesan', '')}</div>
             </div>
@@ -161,17 +183,24 @@ with chat_container:
                 elif tipe_lampiran == "video": st.video(url_lampiran)
             
             if role == "super_admin" or is_me:
-                if st.button("🗑️ Tarik Pesan", key=f"del_{msg['id']}"):
+                if st.button("🗑️ Tarik", key=f"del_{msg['id']}"):
                     supabase.table("data_forum").delete().eq("id", msg['id']).execute()
                     st.toast("✅ Pesan berhasil dihapus!")
-                    st.cache_data.clear()
+                    muat_obrolan.clear()
                     st.rerun()
 
-# ==========================================
-# INPUT KIRIM PESAN & LAMPIRAN
-# ==========================================
-st.markdown("---")
+# --- SUNTIKAN JAVASCRIPT: AUTO SCROLL KE BAWAH (VERSI TERBARU) ---
+# Ini memastikan setelah layar dimuat, browser langsung meluncur ke pesan terbaru di dasar
+st.html("""
+    <script>
+        const doc = window.parent.document;
+        doc.documentElement.scrollTop = doc.documentElement.scrollHeight;
+    </script>
+""")
 
+# ==========================================
+# INPUT KIRIM PESAN & LAMPIRAN (STATIS DI BAWAH)
+# ==========================================
 with st.form("form_chat", clear_on_submit=True):
     isi_pesan = st.text_input("Pesan", label_visibility="collapsed", placeholder="Ketik pesan atau paste link di sini...")
     
@@ -220,5 +249,5 @@ with st.form("form_chat", clear_on_submit=True):
             }
             supabase.table("data_forum").insert(data_insert).execute()
             
-            st.cache_data.clear()
+            muat_obrolan.clear()
             st.rerun()
