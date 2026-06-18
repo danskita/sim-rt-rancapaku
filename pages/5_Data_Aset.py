@@ -1,4 +1,10 @@
 import streamlit as st
+st.set_page_config(
+    page_title="Halaman Login", 
+    page_icon="logo_rtrw.png", 
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 # Gembok Keamanan: Cek apakah user sudah login
 if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
     st.warning("⚠️ Akses Ditolak! Silakan login melalui halaman utama terlebih dahulu.")

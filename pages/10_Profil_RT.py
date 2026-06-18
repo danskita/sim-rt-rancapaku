@@ -1,7 +1,13 @@
 import streamlit as st
+
 from supabase import create_client, Client
 from menu import tampilkan_menu
-
+st.set_page_config(
+    page_title="Halaman Login", 
+    page_icon="logo_rtrw.png", 
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 # 1. ATURAN STREAMLIT: set_page_config HARUS PALING ATAS!
 st.set_page_config(page_title="Profil Wilayah", page_icon="🏢", layout="centered")
 

@@ -6,7 +6,12 @@ import datetime
 import time
 from supabase import create_client, Client
 from menu import tampilkan_menu
-
+st.set_page_config(
+    page_title="Halaman Login", 
+    page_icon="logo_rtrw.png", 
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 # Aturan Streamlit: set_page_config harus dipanggil paling awal
 st.set_page_config(page_title="Pengaturan Sistem", page_icon="⚙️", layout="centered")
 

@@ -6,7 +6,12 @@ from fpdf import FPDF
 from datetime import datetime
 from supabase import create_client, Client
 from menu import tampilkan_menu
-
+st.set_page_config(
+    page_title="Halaman Login", 
+    page_icon="logo_rtrw.png", 
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 # 1. Aturan Streamlit: set_page_config harus dipanggil paling awal!
 st.set_page_config(page_title="Cetak Laporan PDF", page_icon="🖨️", layout="centered")
 

@@ -2,7 +2,12 @@ import streamlit as st
 import pandas as pd
 from supabase import create_client, Client
 from menu import tampilkan_menu
-
+st.set_page_config(
+    page_title="Halaman Login", 
+    page_icon="logo_rtrw.png", 
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 # --- KONEKSI KE SUPABASE ---
 url: str = st.secrets["supabase"]["url"]
 key: str = st.secrets["supabase"]["key"]

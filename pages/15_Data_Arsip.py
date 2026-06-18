@@ -3,7 +3,12 @@ import pandas as pd
 import datetime
 from supabase import create_client, Client
 from menu import tampilkan_menu
-
+st.set_page_config(
+    page_title="Halaman Login", 
+    page_icon="logo_rtrw.png", 
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 # --- KONFIGURASI HALAMAN ---
 st.set_page_config(page_title="Arsip Digital", page_icon="🗂️", layout="wide")
 

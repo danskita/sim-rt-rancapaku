@@ -1,6 +1,11 @@
 import streamlit as st
 from menu import tampilkan_menu
-
+st.set_page_config(
+    page_title="Halaman Login", 
+    page_icon="logo_rtrw.png", 
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 # --- KONFIGURASI HALAMAN ---
 st.set_page_config(page_title="Panduan & Akun Demo", page_icon="📖", layout="centered")
 
