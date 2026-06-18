@@ -198,7 +198,7 @@ with chat_container:
                 elif tipe_lampiran == "video": st.video(url_lampiran)
             
             if role == "super_admin" or is_me:
-                if st.button("🗑️ Tarik", key=f"del_{msg['id']}"):
+                if st.button("🗑️hapus", key=f"del_{msg['id']}"):
                     supabase.table("data_forum").delete().eq("id", msg['id']).execute()
                     st.toast("✅ Pesan berhasil dihapus!")
                     muat_obrolan.clear()
