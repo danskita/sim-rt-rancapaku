@@ -49,16 +49,40 @@ def tampilkan_menu():
 
     # =========================================================
     # 3. MENU PUSAT CETAK (DIBUKA UNTUK SEMUA ROLE)
-    # Karena berada di luar if-elif, menu ini akan otomatis 
-    # muncul di sidebar Kepala Desa, Ketua RW, dan Ketua RT!
     # =========================================================
     st.sidebar.markdown("---")
     st.sidebar.subheader("🖨️ Pusat Cetak Dokumen")
     st.sidebar.page_link("pages/9_Cetak_PDF.py", label="Cetak Surat & Kegiatan", icon="✉️")
     st.sidebar.page_link("pages/13_Cetak_Laporan_PDF.py", label="Cetak Laporan Massal", icon="📊")
 
-    # Tombol Logout (Berlaku untuk semua)
+    # =========================================================
+    # 4. LOGIKA KONFIRMASI KELUAR (LOGOUT)
+    # =========================================================
     st.sidebar.markdown("---")
-    if st.sidebar.button("🚪 Logout dari Sistem", width="stretch", key="tombol_logout_unik"): 
-        st.session_state.clear()
-        st.switch_page("App.py")
+    
+    # Inisialisasi state konfirmasi jika belum ada
+    if "konfirmasi_keluar" not in st.session_state:
+        st.session_state.konfirmasi_keluar = False
+
+    # Kondisi 1: Jika tombol utama BELUM ditekan
+    if not st.session_state.konfirmasi_keluar:
+        if st.sidebar.button("🚪 Logout dari Sistem", use_container_width=True, key="btn_logout_utama"): 
+            st.session_state.konfirmasi_keluar = True
+            st.rerun()
+            
+    # Kondisi 2: Jika tombol utama SUDAH ditekan (Tampilkan Peringatan & Pilihan)
+    else:
+        st.sidebar.warning("❓ Yakin ingin keluar dari aplikasi?")
+        
+        # Membagi layar sidebar menjadi 2 kolom untuk tombol Ya dan Batal
+        col1, col2 = st.sidebar.columns(2)
+        
+        with col1:
+            if st.button("Ya", use_container_width=True, type="primary", key="btn_ya"):
+                st.session_state.clear()
+                st.switch_page("App.py")
+        
+        with col2:
+            if st.button("Batal", use_container_width=True, type="secondary", key="btn_batal"):
+                st.session_state.konfirmasi_keluar = False
+                st.rerun()
