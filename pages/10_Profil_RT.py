@@ -192,3 +192,28 @@ with st.form("form_profil"):
                     st.success(f"✅ Sempurna! Profil **{nama_target}** berhasil disimpan.")
                 except Exception as e:
                     st.error(f"⚠️ Terjadi kesalahan saat menyimpan profil: {e}")
+# ==========================================
+# FITUR SINKRONISASI LOGO KHUSUS ADMIN DESA
+# ==========================================
+if role == "super_admin":
+    st.markdown("---")
+    st.subheader("🖼️ Pengaturan Logo Resmi Desa")
+    st.write("Logo yang diunggah di sini akan **otomatis tersinkronisasi** dan digunakan pada Kop Surat seluruh RT dan RW.")
+    
+    file_logo = st.file_uploader("Pilih file Logo (disarankan format PNG dengan latar transparan)", type=["png", "jpg", "jpeg"])
+    
+    if st.button("🚀 Unggah & Sinkronisasikan Logo", type="primary", width="stretch"):
+        if file_logo is not None:
+            with st.spinner("Sedang mengunggah dan menyinkronkan logo ke seluruh wilayah..."):
+                try:
+                    # Menggunakan upsert=true agar logo yang lama otomatis tertimpa dengan yang baru
+                    supabase.storage.from_("arsip_digital").upload(
+                        path="logo_desa_resmi.png",
+                        file=file_logo.getvalue(),
+                        file_options={"content-type": file_logo.type, "upsert": "true"}
+                    )
+                    st.success("✅ Sempurna! Logo resmi berhasil diperbarui dan siap digunakan oleh semua RT/RW.")
+                except Exception as e:
+                    st.error(f"⚠️ Gagal mengunggah logo. Pastikan koneksi aman. Error: {e}")
+        else:
+            st.warning("⚠️ Silakan pilih file gambar logo terlebih dahulu.")

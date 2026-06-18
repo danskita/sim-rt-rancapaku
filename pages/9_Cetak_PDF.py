@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import datetime
+import requests
+import os
 from fpdf import FPDF
 from supabase import create_client, Client
 from menu import tampilkan_menu
@@ -97,10 +99,35 @@ tgl_cetak = f"{hari_ini.day} {bulan_indo[hari_ini.month]} {hari_ini.year}"
 tahun_ini = hari_ini.year
 
 # ==========================================
+# MESIN SINKRONISASI LOGO OTOMATIS
+# ==========================================
+@st.cache_data(ttl=300) 
+def unduh_logo_sinkron():
+    try:
+        # Mengambil logo dari brankas arsip_digital
+        url_logo = supabase.storage.from_("arsip_digital").get_public_url("logo_desa_resmi.png")
+        respon = requests.get(url_logo)
+        
+        # Jika file ditemukan, simpan sementara untuk dipakai FPDF
+        if respon.status_code == 200:
+            with open("logo_temp.png", "wb") as f:
+                f.write(respon.content)
+            return "logo_temp.png"
+    except:
+        return None
+    return None
+
+# ==========================================
 # KELAS PDF MASTER (KOP SURAT)
 # ==========================================
 class PDFMaster(FPDF):
     def header(self):
+        # 1. Tampilkan Logo (Jika Ada)
+        logo_path = unduh_logo_sinkron()
+        if logo_path and os.path.exists(logo_path):
+            self.image(logo_path, x=15, y=10, w=22)
+            
+        # 2. Cetak Teks Kop Surat
         self.set_font("helvetica", "B", 13)
         self.cell(w=0, h=6, text=f"PEMERINTAH KABUPATEN/KOTA {kota.upper()}", align="C", new_x="LMARGIN", new_y="NEXT")
         self.cell(w=0, h=6, text=f"KECAMATAN {kecamatan.upper()}", align="C", new_x="LMARGIN", new_y="NEXT")

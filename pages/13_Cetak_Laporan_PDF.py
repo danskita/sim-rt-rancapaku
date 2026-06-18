@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import requests
+import os
 from fpdf import FPDF
 from datetime import datetime
 from supabase import create_client, Client
@@ -71,6 +73,22 @@ else:
     penandatangan_jabatan = f"Ketua RT {rt_akses}"
 
 st.markdown("---")
+
+# ==========================================
+# MESIN SINKRONISASI LOGO OTOMATIS
+# ==========================================
+@st.cache_data(ttl=300) 
+def unduh_logo_sinkron():
+    try:
+        url_logo = supabase.storage.from_("arsip_digital").get_public_url("logo_desa_resmi.png")
+        respon = requests.get(url_logo)
+        if respon.status_code == 200:
+            with open("logo_temp_laporan.png", "wb") as f:
+                f.write(respon.content)
+            return "logo_temp_laporan.png"
+    except:
+        return None
+    return None
 
 # ==========================================
 # LOGIKA TARIK DATA & PRATINJAU LIVE DI LAYAR
@@ -197,6 +215,11 @@ if st.button("🖨️ Cetak ke PDF Resmi Sekarang", type="primary", width="stret
                 def header(self):
                     # KOP SURAT HANYA MUNCUL DI HALAMAN PERTAMA (HALAMAN 1)
                     if self.page_no() == 1:
+                        # --- FITUR MENAMPILKAN LOGO ---
+                        logo_path = unduh_logo_sinkron()
+                        if logo_path and os.path.exists(logo_path):
+                            self.image(logo_path, x=15, y=10, w=22)
+                            
                         self.set_font("helvetica", "B", 14)
                         self.cell(0, 7, f"PEMERINTAH KABUPATEN/KOTA {kota.upper()}", align="C", new_x="LMARGIN", new_y="NEXT")
                         self.cell(0, 7, f"KECAMATAN {kecamatan.upper()}", align="C", new_x="LMARGIN", new_y="NEXT")
