@@ -61,7 +61,7 @@ def muat_data_online():
         if not df.empty:
             # Konversi waktu ke format yang bisa dihitung
             df['terakhir_aktif'] = pd.to_datetime(df['terakhir_aktif'])
-            waktu_kini = pd.Timestamp.utcnow()
+            waktu_kini = pd.Timestamp.now('UTC')
             # Anggap "Online" jika aktif dalam 5 menit terakhir
             df['is_online'] = (waktu_kini - df['terakhir_aktif']).dt.total_seconds() <= 300
             return df[df['is_online'] == True]
@@ -94,6 +94,7 @@ with st.expander(f"🟢 Lihat Siapa yang Sedang Online ({jumlah_online} Orang)")
 @st.cache_data(ttl=2)
 def muat_obrolan():
     try:
+        # Menarik 50 pesan terakhir agar performa HP tetap ringan
         res = supabase.table("data_forum").select("*").order("waktu", desc=True).limit(50).execute()
         pesan_data = res.data if res.data else []
         pesan_data.reverse() 
@@ -101,10 +102,13 @@ def muat_obrolan():
     except:
         return []
 
+# Tata letak tombol segarkan (refresh)
 col_title, col_btn = st.columns([3, 1])
 with col_btn:
-    if st.button("🔄 Segarkan", width="stretch"):
-        st.cache_data.clear()
+    # PERBARUAN 1: Menggunakan use_container_width=True agar tombol proporsional
+    if st.button("🔄 Segarkan", use_container_width=True):
+        # PERBARUAN 2: Hanya mereset memori chat, bukan memori seluruh aplikasi
+        muat_obrolan.clear()
         st.rerun()
 
 st.markdown("---")
