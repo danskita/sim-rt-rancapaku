@@ -14,10 +14,10 @@ st.markdown("""
     <style>
     /* 1. Memberi ruang kosong di bawah agar pesan tidak tertutup kotak input */
     .block-container {
-        padding-bottom: 150px !important;
+        padding-bottom: 160px !important;
     }
     
-    /* 2. Memaku (Fixed) kotak input ke dasar layar HP/Laptop */
+    /* 2. Memaku (Fixed) kotak input ke dasar layar agar 100% SOLID */
     div[data-testid="stForm"] {
         position: fixed;
         bottom: 0;
@@ -25,13 +25,28 @@ st.markdown("""
         transform: translateX(-50%);
         width: 100%;
         max-width: 46rem; 
-        background-color: var(--secondary-background-color) !important; /* Otomatis menyesuaikan Dark/Light Mode */
-        padding: 15px 20px 15px 20px !important;
-        z-index: 999;
-        border-top: 2px solid var(--primary-color);
-        box-shadow: 0px -10px 20px rgba(0,0,0,0.2);
+        
+        /* MENGGUNAKAN KODE WARNA HEX SOLID MUTLAK (TIDAK TRANSPARAN) */
+        background-color: #0e1117 !important; 
+        
+        padding: 15px 20px 20px 20px !important;
+        z-index: 999999 !important; /* Memaksa elemen selalu berada di posisi paling depan */
+        border-top: 2px solid #333 !important;
         border-radius: 15px 15px 0 0;
-        height: max-content !important; /* Kunci ukuran form agar tidak melar menutupi layar */
+        height: max-content !important;
+    }
+    
+    /* Deteksi otomatis jika perangkat pengguna menggunakan Mode Terang (Light Mode) */
+    @media (prefers-color-scheme: light) {
+        div[data-testid="stForm"] {
+            background-color: #ffffff !important; 
+            border-top: 2px solid #ddd !important;
+        }
+    }
+    
+    /* Memastikan komponen di dalam form tidak mewarisi transparansi */
+    div[data-testid="stForm"] > div {
+        background-color: transparent !important;
     }
     
     /* 3. Menyembunyikan footer bawaan Streamlit agar bersih */
