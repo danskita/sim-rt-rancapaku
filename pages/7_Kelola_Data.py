@@ -1,16 +1,22 @@
 import streamlit as st
 from supabase import create_client, Client
 from menu import tampilkan_menu
+
+# ========================================================
+# 1. KONFIGURASI HALAMAN WAJIB PALING ATAS (Hanya Satu Kali)
+# ========================================================
 st.set_page_config(
-    page_title="Halaman Login", 
-    page_icon="logo_rtrw.jpg", 
+    page_title="Kelola Data Penduduk", 
+    page_icon="⚙️", 
     layout="centered",
     initial_sidebar_state="collapsed"
 )
+
 # --- KONEKSI KE SUPABASE ---
 url: str = st.secrets["supabase"]["url"]
 key: str = st.secrets["supabase"]["key"]
 supabase: Client = create_client(url, key)
+
 tampilkan_menu()
 # ---------------------------
 
@@ -18,13 +24,13 @@ tampilkan_menu()
 if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
     st.warning("⚠️ Akses Ditolak! Silakan login melalui halaman utama terlebih dahulu.")
     st.stop()
+
 # GEMBOK KHUSUS: Hanya Operator RT yang boleh masuk untuk input/edit/hapus data
 role = st.session_state.get("role", "")
 if role in ["admin_rw", "super_admin"]:
     st.error("⛔ Akses Ditolak! Halaman ini adalah wewenang mutlak Pengurus RT. Anda (RW/Desa) hanya memiliki akses untuk melihat rekap data pada menu Cetak Laporan.")
     st.stop()
 
-st.set_page_config(page_title="Kelola Data", page_icon="⚙️", layout="centered")
 
 st.title("⚙️ Kelola Data Penduduk")
 st.markdown("Halaman ini digunakan untuk mengubah (Edit), menghapus (Hapus), serta melakukan aksi cepat administrasi warga.")
@@ -62,7 +68,6 @@ def ambil_daftar_warga():
             query = query.eq("rt", rt_akses).eq("rw", rw_akses) # Hanya RT-nya sendiri
         elif role == "admin_rw":
             query = query.eq("rw", rw_akses) # Semua RT di dalam RW-nya
-        # Jika "super_admin", query tidak ditambah filter = ambil semua data se-Desa
             
         response = query.execute()
         return response.data
@@ -93,15 +98,15 @@ else:
     col_btn1, col_btn2, col_btn3 = st.columns(3)
     
     with col_btn1:
-        if st.button("✉️ Buat Surat"):
+        if st.button("✉️ Buat Surat", use_container_width=True):
             st.session_state['autofill_nik'] = nik_target
             st.switch_page("pages/4_Data_Surat.py")
     with col_btn2:
-        if st.button("🔄 Lapor Lampid"):
+        if st.button("🔄 Lapor Lampid", use_container_width=True):
             st.session_state['autofill_nik'] = nik_target
             st.switch_page("pages/2_Data_Lampid.py")
     with col_btn3:
-        if st.button("📦 Beri Bansos"):
+        if st.button("📦 Beri Bansos", use_container_width=True):
             st.session_state['autofill_nik'] = nik_target
             st.switch_page("pages/3_Data_Bansos.py")
 
@@ -129,7 +134,7 @@ else:
             
         jalan_baru = st.text_area("Jalan / Kampung", value=detail_warga.get('jalan_kampung', ''))
 
-        submit_edit = st.form_submit_button("Simpan Perubahan", type="primary")
+        submit_edit = st.form_submit_button("Simpan Perubahan", type="primary", use_container_width=True)
 
         if submit_edit:
             data_update = {
@@ -153,7 +158,7 @@ else:
     st.subheader("🗑️ Hapus Data Warga")
     konfirmasi = st.checkbox(f"Saya yakin ingin menghapus data dengan NIK {nik_target}")
     if konfirmasi:
-        if st.button("Hapus Data Secara Permanen"):
+        if st.button("Hapus Data Secara Permanen", type="primary", use_container_width=True):
             try:
                 supabase.table("data_penduduk").delete().eq("nik", nik_target).execute()
                 st.success("✅ Data berhasil dihapus.")

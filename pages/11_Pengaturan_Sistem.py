@@ -6,14 +6,16 @@ import datetime
 import time
 from supabase import create_client, Client
 from menu import tampilkan_menu
+
+# ========================================================
+# 1. KONFIGURASI HALAMAN WAJIB PALING ATAS (Hanya Satu Kali)
+# ========================================================
 st.set_page_config(
-    page_title="Halaman Login", 
-    page_icon="logo_rtrw.png", 
+    page_title="Pengaturan Sistem", 
+    page_icon="⚙️", 
     layout="centered",
     initial_sidebar_state="collapsed"
 )
-# Aturan Streamlit: set_page_config harus dipanggil paling awal
-st.set_page_config(page_title="Pengaturan Sistem", page_icon="⚙️", layout="centered")
 
 # --- KONEKSI KE SUPABASE ---
 url: str = st.secrets["supabase"]["url"]
@@ -46,7 +48,7 @@ with tab_backup:
     st.subheader("💾 Backup Seluruh Database")
     st.info("Fitur ini akan mengunduh seluruh data dari semua tabel ke dalam satu file Excel yang rapi.")
     
-    if st.button("Siapkan File Backup", type="primary", width="stretch"):
+    if st.button("Siapkan File Backup", type="primary", use_container_width=True):
         with st.spinner("Sedang menarik data dari server Cloud... (Mohon tunggu, jangan tutup halaman ini)"):
             try:
                 # 1. Siapkan daftar tabel yang akan ditarik
@@ -92,7 +94,7 @@ with tab_backup:
                     data=excel_data,
                     file_name=f"Backup_SIM_RT_{tgl_backup}.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    width="stretch"
+                    use_container_width=True
                 )
             except Exception as e:
                 st.error(f"⚠️ Terjadi kesalahan kritis saat menyiapkan backup: {e}")
@@ -145,7 +147,7 @@ with tab_restore:
     file_backup_upload = st.file_uploader("Pilih file Backup Excel Anda", type=['xlsx'], key="restore_file")
     
     if file_backup_upload is not None:
-        if st.button("Mulai Proses Restore", type="primary", width="stretch"):
+        if st.button("Mulai Proses Restore", type="primary", use_container_width=True):
             with st.spinner("Sedang merakit ulang database Anda... Mohon tunggu!"):
                 try:
                     xls = pd.read_excel(file_backup_upload, sheet_name=None, engine='openpyxl')
@@ -212,7 +214,7 @@ with tab_import:
         data=excel_data_import,
         file_name='Template_Data_Penduduk.xlsx',
         mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        width="stretch"
+        use_container_width=True
     )
 
     st.markdown("---")
@@ -260,9 +262,9 @@ with tab_import:
             df_import = df_import.replace({np.nan: None})
 
             st.write("Preview Data yang siap diimpor:")
-            st.dataframe(df_import, width="stretch")
+            st.dataframe(df_import, use_container_width=True)
 
-            if st.button("🚀 Eksekusi Import ke Database", width="stretch", type="primary"):
+            if st.button("🚀 Eksekusi Import ke Database", use_container_width=True, type="primary"):
                 with st.spinner("Sedang menyimpan data ke cloud..."):
                     data_import_records = df_import.to_dict(orient="records")
                     

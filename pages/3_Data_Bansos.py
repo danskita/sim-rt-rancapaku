@@ -2,16 +2,22 @@ import streamlit as st
 import datetime
 from supabase import create_client, Client
 from menu import tampilkan_menu
+
+# ========================================================
+# 1. KONFIGURASI HALAMAN WAJIB PALING ATAS (Hanya Satu Kali)
+# ========================================================
 st.set_page_config(
-    page_title="Halaman Login", 
-    page_icon="logo_rtrw.png", 
+    page_title="Data Bansos", 
+    page_icon="📦", 
     layout="centered",
     initial_sidebar_state="collapsed"
 )
+
 # --- KONEKSI KE SUPABASE ---
 url: str = st.secrets["supabase"]["url"]
 key: str = st.secrets["supabase"]["key"]
 supabase: Client = create_client(url, key)
+
 tampilkan_menu()
 # ---------------------------
 
@@ -19,13 +25,13 @@ tampilkan_menu()
 if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
     st.warning("⚠️ Akses Ditolak! Silakan login melalui halaman utama terlebih dahulu.")
     st.stop()
+
 # GEMBOK KHUSUS: Hanya Operator RT yang boleh masuk untuk input/edit/hapus data
 role = st.session_state.get("role", "")
 if role in ["admin_rw", "super_admin"]:
     st.error("⛔ Akses Ditolak! Halaman ini adalah wewenang mutlak Pengurus RT. Anda (RW/Desa) hanya memiliki akses untuk melihat rekap data pada menu Cetak Laporan.")
     st.stop()
 
-st.set_page_config(page_title="Data Bansos", page_icon="📦", layout="centered")
 
 st.title("📦 Modul Data Bantuan Sosial (Bansos)")
 st.markdown("Halaman ini digunakan untuk mencatat distribusi Bantuan Sosial warga RT.")
@@ -54,7 +60,7 @@ with st.form("form_bansos", clear_on_submit=True):
     keterangan = st.text_area("Keterangan Tambahan", help="Contoh: Menerima beras 10kg dan minyak goreng")
     
     st.markdown("*(Tanda * wajib diisi)*")
-    submit_bansos = st.form_submit_button("Simpan Data Bansos")
+    submit_bansos = st.form_submit_button("Simpan Data Bansos", type="primary", use_container_width=True)
     
     # Validasi dan Insert
     if submit_bansos:

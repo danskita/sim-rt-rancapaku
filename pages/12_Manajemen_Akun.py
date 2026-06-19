@@ -2,16 +2,22 @@ import streamlit as st
 import pandas as pd
 from supabase import create_client, Client
 from menu import tampilkan_menu
+
+# ========================================================
+# 1. KONFIGURASI HALAMAN WAJIB PALING ATAS (Hanya Satu Kali)
+# ========================================================
 st.set_page_config(
-    page_title="Halaman Login", 
-    page_icon="logo_rtrw.png", 
-    layout="centered",
+    page_title="Manajemen Akun", 
+    page_icon="🔐", 
+    layout="wide",
     initial_sidebar_state="collapsed"
 )
+
 # --- KONEKSI KE SUPABASE ---
 url: str = st.secrets["supabase"]["url"]
 key: str = st.secrets["supabase"]["key"]
 supabase: Client = create_client(url, key)
+
 tampilkan_menu()
 # ---------------------------
 
@@ -25,8 +31,6 @@ role = st.session_state.get("role", "operator_rt")
 if role == "operator_rt":
     st.error("⛔ Akses Ditolak! Halaman ini hanya diperuntukkan bagi Kepala Desa dan Ketua RW.")
     st.stop()
-
-st.set_page_config(page_title="Manajemen Akun", page_icon="🔐", layout="wide")
 
 st.title("🔐 Manajemen Akun Pengurus")
 st.markdown("Kelola hak akses (Username & Password) untuk pengurus di wilayah Anda.")
@@ -57,13 +61,13 @@ with tab_daftar:
     
     if not df_admin.empty:
         df_tampil = df_admin[['nama_wilayah', 'username', 'password', 'role', 'rt_akses', 'rw_akses']]
-        st.dataframe(df_tampil, width="stretch")
+        st.dataframe(df_tampil, use_container_width=True)
         
         st.markdown("---")
         st.markdown("### 🗑️ Hapus Akun")
         with st.form("form_hapus_akun"):
             akun_dihapus = st.selectbox("Pilih Username yang akan dihapus:", df_admin['username'].tolist())
-            submit_hapus = st.form_submit_button("Hapus Akun Permanen")
+            submit_hapus = st.form_submit_button("Hapus Akun Permanen", type="primary", use_container_width=True)
             
             if submit_hapus:
                 if akun_dihapus == st.session_state['username']:
@@ -105,7 +109,7 @@ with tab_tambah:
             rt_baru = st.selectbox("Akses RT (Abaikan jika membuat akun RW/Desa)", pilihan_rt)
 
         st.markdown("*(Tanda * wajib diisi)*")
-        submit_baru = st.form_submit_button("Simpan Akun Baru", type="primary")
+        submit_baru = st.form_submit_button("Simpan Akun Baru", type="primary", use_container_width=True)
         
         if submit_baru:
             if not username_baru or not password_baru or not nama_wilayah_baru:
@@ -175,7 +179,7 @@ with tab_edit:
                 rt_edit = st.selectbox("Akses RT", pilihan_rt, index=pilihan_rt.index(rt_awal))
 
             st.markdown("*(Tanda * wajib diisi)*")
-            submit_edit = st.form_submit_button("Simpan Perubahan Akun", type="primary")
+            submit_edit = st.form_submit_button("Simpan Perubahan Akun", type="primary", use_container_width=True)
             
             if submit_edit:
                 if not password_edit or not nama_wilayah_edit:

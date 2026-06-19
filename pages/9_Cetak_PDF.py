@@ -6,14 +6,16 @@ import os
 from fpdf import FPDF
 from supabase import create_client, Client
 from menu import tampilkan_menu
+
+# ========================================================
+# 1. KONFIGURASI HALAMAN WAJIB PALING ATAS (Hanya Satu Kali)
+# ========================================================
 st.set_page_config(
-    page_title="Halaman Login", 
-    page_icon="logo_rtrw.png", 
+    page_title="Pusat Cetak Dokumen", 
+    page_icon="🖨️", 
     layout="centered",
     initial_sidebar_state="collapsed"
 )
-# 1. Aturan Streamlit: set_page_config harus dipanggil paling awal!
-st.set_page_config(page_title="Pusat Cetak Dokumen", page_icon="🖨️", layout="centered")
 
 # --- KONEKSI KE SUPABASE ---
 url: str = st.secrets["supabase"]["url"]
@@ -226,7 +228,7 @@ with tab_pengantar:
                 paragraf_2 = f"Orang tersebut di atas adalah benar warga yang berdomisili di lingkungan RT {rt_akses} / RW {rw_akses}. Surat pengantar ini dibuat untuk keperluan: {keperluan}."
                 jenis_dokumen = "Surat Pengantar"
             
-            if st.button(f"🖨️ Cetak & Otomatis Arsipkan {jenis_dokumen}", type="primary", width="stretch"):
+            if st.button(f"🖨️ Cetak & Otomatis Arsipkan {jenis_dokumen}", type="primary", use_container_width=True):
                 with st.spinner("Merangkai PDF dan Menyimpan ke Arsip Digital..."):
                     pdf = PDFMaster()
                     pdf.add_page()
@@ -269,7 +271,8 @@ with tab_pengantar:
 
                     # Bagian Tanda Tangan
                     pdf.set_x(120)
-                    pdf.cell(w=0, h=6, text=f"{kota.title()}, {tgl_cetak}", new_x="LMARGIN", new_y="NEXT")
+                    # UBAHAN: Alamat Titimangsa menjadi nama desa
+                    pdf.cell(w=0, h=6, text=f"{nama_desa.title()}, {tgl_cetak}", new_x="LMARGIN", new_y="NEXT")
                     pdf.ln(5)
                     pdf.set_x(20)
                     pdf.cell(w=60, h=6, text="Pemohon,", align="C")
@@ -315,7 +318,7 @@ with tab_pengantar:
                         st.warning(f"✅ Dokumen berhasil dirangkai, namun gagal Auto-Arsip: {err}")
 
             if "pdf_pengantar" in st.session_state:
-                st.download_button(label=f"📥 Download Dokumen PDF", data=st.session_state["pdf_pengantar"], file_name=st.session_state["nama_file_pengantar"], mime="application/pdf", width="stretch")
+                st.download_button(label=f"📥 Download Dokumen PDF", data=st.session_state["pdf_pengantar"], file_name=st.session_state["nama_file_pengantar"], mime="application/pdf", use_container_width=True)
 
 # ---------------------------------------------------------
 # TAB 2: SURAT UNDANGAN
@@ -343,7 +346,7 @@ with tab_undangan:
             tempat_acara = st.text_input("Tempat Pelaksanaan", value="Posko / Balai Pertemuan")
             agenda = st.text_input("Agenda / Acara", value="Membahas Keamanan & Ketertiban Lingkungan")
             
-        submit_undangan = st.form_submit_button("🖨️ Cetak & Otomatis Arsipkan Undangan", type="primary", width="stretch")
+        submit_undangan = st.form_submit_button("🖨️ Cetak & Otomatis Arsipkan Undangan", type="primary", use_container_width=True)
         
     if submit_undangan:
         with st.spinner("Memproses Surat Undangan dan Menyimpan ke Arsip..."):
@@ -355,7 +358,8 @@ with tab_undangan:
             pdf.cell(w=25, h=6, text="Nomor", align="L")
             pdf.cell(w=5, h=6, text=":", align="C")
             pdf.cell(w=90, h=6, text=no_surat, align="L")
-            pdf.cell(w=0, h=6, text=f"{kota.title()}, {tgl_cetak}", align="R", new_x="LMARGIN", new_y="NEXT")
+            # UBAHAN: Alamat Titimangsa menjadi nama desa
+            pdf.cell(w=0, h=6, text=f"{nama_desa.title()}, {tgl_cetak}", align="R", new_x="LMARGIN", new_y="NEXT")
             
             pdf.cell(w=25, h=6, text="Lampiran", align="L")
             pdf.cell(w=5, h=6, text=":", align="C")
@@ -434,7 +438,7 @@ with tab_undangan:
                 st.warning(f"✅ Undangan berhasil dirangkai, namun gagal Auto-Arsip: {err}")
 
     if "pdf_undangan" in st.session_state:
-        st.download_button(label="📥 Download Surat Undangan", data=st.session_state["pdf_undangan"], file_name="Surat_Undangan.pdf", mime="application/pdf", width="stretch")
+        st.download_button(label="📥 Download Surat Undangan", data=st.session_state["pdf_undangan"], file_name="Surat_Undangan.pdf", mime="application/pdf", use_container_width=True)
 
 # ---------------------------------------------------------
 # TAB 3: LAPORAN KEGIATAN
@@ -454,7 +458,7 @@ with tab_kegiatan:
         deskripsi = st.text_area("Deskripsi / Rangkaian Kegiatan", value="1. Pembersihan area publik.\n2. Pemangkasan ranting pohon rawan tumbang.", height=120)
         hasil = st.text_area("Hasil yang Dicapai / Notulensi", value="Lingkungan menjadi lebih bersih. Kegiatan berjalan dengan lancar.", height=120)
         
-        submit_laporan = st.form_submit_button("🖨️ Cetak & Otomatis Arsipkan Laporan", type="primary", width="stretch")
+        submit_laporan = st.form_submit_button("🖨️ Cetak & Otomatis Arsipkan Laporan", type="primary", use_container_width=True)
         
     if submit_laporan:
         with st.spinner("Memproses Laporan Kegiatan dan Menyimpan ke Arsip..."):
@@ -501,7 +505,8 @@ with tab_kegiatan:
             
             pdf.ln(15)
             pdf.set_x(120)
-            pdf.cell(w=60, h=6, text=f"{kota.title()}, {tgl_cetak}", align="C", new_x="LMARGIN", new_y="NEXT")
+            # UBAHAN: Alamat Titimangsa menjadi nama desa
+            pdf.cell(w=60, h=6, text=f"{nama_desa.title()}, {tgl_cetak}", align="C", new_x="LMARGIN", new_y="NEXT")
             pdf.set_x(120)
             pdf.cell(w=60, h=6, text=f"Pembuat Laporan, {jabatan_resmi},", align="C", new_x="LMARGIN", new_y="NEXT")
             pdf.ln(25)
@@ -538,4 +543,4 @@ with tab_kegiatan:
                 st.warning(f"✅ Laporan berhasil dirangkai, namun gagal Auto-Arsip: {err}")
 
     if "pdf_laporan" in st.session_state:
-        st.download_button(label="📥 Download Laporan Kegiatan", data=st.session_state["pdf_laporan"], file_name="Laporan_Kegiatan.pdf", mime="application/pdf", width="stretch")
+        st.download_button(label="📥 Download Laporan Kegiatan", data=st.session_state["pdf_laporan"], file_name="Laporan_Kegiatan.pdf", mime="application/pdf", use_container_width=True)

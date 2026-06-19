@@ -3,14 +3,16 @@ import pandas as pd
 import datetime
 from supabase import create_client, Client
 from menu import tampilkan_menu
+
+# ========================================================
+# 1. KONFIGURASI HALAMAN WAJIB PALING ATAS (Hanya Satu Kali)
+# ========================================================
 st.set_page_config(
-    page_title="Halaman Login", 
-    page_icon="logo_rtrw.png", 
-    layout="centered",
+    page_title="Arsip Digital", 
+    page_icon="🗂️", 
+    layout="wide",
     initial_sidebar_state="collapsed"
 )
-# --- KONFIGURASI HALAMAN ---
-st.set_page_config(page_title="Arsip Digital", page_icon="🗂️", layout="wide")
 
 # --- KONEKSI KE SUPABASE ---
 url: str = st.secrets["supabase"]["url"]
@@ -101,7 +103,7 @@ with tab_tabel:
             # Menampilkan tabel interaktif Streamlit
             st.dataframe(
                 df_tabel, 
-                width="stretch",
+                use_container_width=True,
                 column_config={
                     "id": st.column_config.NumberColumn("ID", format="%d", width="small"),
                     "tanggal": st.column_config.DateColumn("Tanggal", format="DD/MM/YYYY"),
@@ -118,7 +120,7 @@ with tab_tabel:
     else:
         st.info("📭 Belum ada arsip yang tersimpan di wilayah Anda.")
         
-    if st.button("🔄 Segarkan Tabel", width="stretch"):
+    if st.button("🔄 Segarkan Tabel", use_container_width=True):
         st.cache_data.clear()
 
 # ==========================================
@@ -139,7 +141,7 @@ with tab_tambah:
             
         file_arsip = st.file_uploader("Pilih File (PDF, JPG, PNG)", type=["pdf", "jpg", "jpeg", "png"])
         
-        submit_arsip = st.form_submit_button("💾 Unggah & Simpan Arsip", width="stretch", type="primary")
+        submit_arsip = st.form_submit_button("💾 Unggah & Simpan Arsip", use_container_width=True, type="primary")
         
         if submit_arsip:
             if not input_judul:
@@ -203,7 +205,7 @@ with tab_hapus:
         
         st.warning("⚠️ Perhatian: File yang dihapus dari tabel tidak akan bisa dikembalikan.")
         
-        if st.button("🗑️ Hapus Arsip Terpilih", type="primary"):
+        if st.button("🗑️ Hapus Arsip Terpilih", type="primary", use_container_width=True):
             with st.spinner("Sedang menghapus arsip..."):
                 try:
                     # Hapus dari tabel data_arsip

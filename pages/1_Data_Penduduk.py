@@ -2,12 +2,17 @@ import streamlit as st
 import datetime
 from supabase import create_client, Client
 from menu import tampilkan_menu
+
+# ========================================================
+# 1. KONFIGURASI HALAMAN WAJIB PALING ATAS (Hanya Satu Kali)
+# ========================================================
 st.set_page_config(
-    page_title="Halaman Login", 
-    page_icon="logo_rtrw.png", 
+    page_title="Data Penduduk", 
+    page_icon="👥", 
     layout="centered",
     initial_sidebar_state="collapsed"
 )
+
 # --- KONEKSI KE SUPABASE ---
 url: str = st.secrets["supabase"]["url"]
 key: str = st.secrets["supabase"]["key"]
@@ -19,13 +24,13 @@ tampilkan_menu()
 if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
     st.warning("⚠️ Akses Ditolak! Silakan login melalui halaman utama terlebih dahulu.")
     st.stop()
+
 # GEMBOK KHUSUS: Hanya Operator RT yang boleh masuk untuk input/edit/hapus data
 role = st.session_state.get("role", "")
 if role in ["admin_rw", "super_admin"]:
     st.error("⛔ Akses Ditolak! Halaman ini adalah wewenang mutlak Pengurus RT. Anda (RW/Desa) hanya memiliki akses untuk melihat rekap data pada menu Cetak Laporan.")
     st.stop()
 
-st.set_page_config(page_title="Data Penduduk", page_icon="👥", layout="centered")
 
 st.title("👥 Modul Data Penduduk (Master)")
 st.markdown("Isi formulir di bawah ini untuk menambahkan data warga baru.")
@@ -91,7 +96,7 @@ with st.form("form_penduduk", clear_on_submit=True):
         rw = st.selectbox("RW *", list_rw, disabled=kunci_rw)
 
     st.markdown("*(Tanda * wajib diisi)*")
-    submit_button = st.form_submit_button("Simpan Data Penduduk", type="primary")
+    submit_button = st.form_submit_button("Simpan Data Penduduk", type="primary", use_container_width=True)
 
     if submit_button:
         nama_lengkap = nama_lengkap_input.title().strip()

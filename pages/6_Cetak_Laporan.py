@@ -3,16 +3,22 @@ import pandas as pd
 import plotly.express as px
 from supabase import create_client, Client
 from menu import tampilkan_menu
+
+# ========================================================
+# 1. KONFIGURASI HAL উভয়AMAN WAJIB PALING ATAS (Hanya Satu Kali)
+# ========================================================
 st.set_page_config(
-    page_title="Halaman Login", 
-    page_icon="logo_rtrw.png", 
-    layout="centered",
+    page_title="Dashboard & Laporan", 
+    page_icon="📊", 
+    layout="wide",
     initial_sidebar_state="collapsed"
 )
+
 # --- KONEKSI KE SUPABASE ---
 url: str = st.secrets["supabase"]["url"]
 key: str = st.secrets["supabase"]["key"]
 supabase: Client = create_client(url, key)
+
 tampilkan_menu()
 # ---------------------------
 
@@ -26,8 +32,6 @@ role = st.session_state.get("role", "operator_rt")
 rt_akses = st.session_state.get("rt_akses", "001")
 rw_akses = st.session_state.get("rw_akses", "001")
 nama_wilayah = st.session_state.get("nama_wilayah", "Wilayah Tidak Diketahui")
-
-st.set_page_config(page_title="Dashboard & Laporan", page_icon="📊", layout="wide")
 
 st.title("📊 Dashboard & Cetak Laporan")
 st.markdown(f"Pusat pemantauan dan unduh data untuk **{nama_wilayah}**")
@@ -90,9 +94,27 @@ if df_penduduk.empty:
     st.info("Belum ada data warga di wilayah ini.")
 else:
     # ==========================================
+    # LOGIKA PENGHITUNG UMUR OTOMATIS (JOMPO & ANAK)
+    # ==========================================
+    if 'tanggal_lahir' in df_penduduk.columns:
+        # Ubah format tanggal menjadi tipe data waktu yang bisa dihitung
+        df_penduduk['tanggal_lahir'] = pd.to_datetime(df_penduduk['tanggal_lahir'], errors='coerce')
+        
+        # PERBAIKAN ERROR PANDAS TERBARU: Menghitung selisih hari lalu dibagi 365
+        df_penduduk['umur'] = (pd.Timestamp.now().normalize() - df_penduduk['tanggal_lahir']).dt.days // 365
+        
+        # Lansia / Jompo (Usia 60 tahun ke atas)
+        total_jompo = len(df_penduduk[df_penduduk['umur'] >= 60])
+        # Anak-anak (Usia di bawah 18 tahun - Untuk Filter Yatim)
+        total_anak = len(df_penduduk[df_penduduk['umur'] < 18])
+    else:
+        total_jompo = 0
+        total_anak = 0
+
+    # ==========================================
     # METRIK & GRAFIK (Hanya Data yang Difilter)
     # ==========================================
-    st.subheader("📈 Ringkasan Penduduk")
+    st.subheader("📈 Ringkasan Penduduk & Demografi Umur")
     
     total_warga = len(df_penduduk)
 
@@ -104,10 +126,16 @@ else:
         total_l = 0
         total_p = 0
     
+    # Menampilkan Baris Pertama (Total Warga)
     col1, col2, col3 = st.columns(3)
     col1.metric("Total Warga", total_warga)
     col2.metric("Laki-laki", total_l)
     col3.metric("Perempuan", total_p)
+    
+    # Menampilkan Baris Kedua (Jompo & Usia Dini)
+    col4, col5 = st.columns(2)
+    col4.metric("👴 Lansia / Jompo (> 60 Thn)", total_jompo, help="Dihitung otomatis dari tanggal lahir warga")
+    col5.metric("🧒 Anak-anak (< 18 Thn)", total_anak, help="Pemetaan usia untuk target santunan yatim/piatu")
     
     st.markdown("<br>", unsafe_allow_html=True)
     
@@ -116,7 +144,7 @@ else:
         # Pengecekan sebelum membuat diagram Pie
         if 'jenis_kelamin' in df_penduduk.columns and not df_penduduk['jenis_kelamin'].isna().all():
             fig_gender = px.pie(df_penduduk, names='jenis_kelamin', title='Proporsi Jenis Kelamin', hole=0.4)
-            st.plotly_chart(fig_gender, width="stretch")
+            st.plotly_chart(fig_gender, use_container_width=True)
         else:
             st.info("Data jenis kelamin belum tersedia untuk membuat grafik.")
             
@@ -126,7 +154,7 @@ else:
             agama_count = df_penduduk['agama'].value_counts().reset_index()
             agama_count.columns = ['Agama', 'Jumlah']
             fig_agama = px.bar(agama_count, x='Agama', y='Jumlah', title='Distribusi Agama')
-            st.plotly_chart(fig_agama, width="stretch")
+            st.plotly_chart(fig_agama, use_container_width=True)
         else:
             st.info("Data agama belum tersedia untuk membuat grafik.")
 
@@ -140,22 +168,22 @@ else:
     tab1, tab2, tab3, tab4 = st.tabs(["👥 Data Penduduk", "🔄 Laporan LAMPID", "📦 Bansos & Surat", "🏢 Aset RT"])
     
     with tab1:
-        st.dataframe(df_penduduk, width="stretch")
+        st.dataframe(df_penduduk, use_container_width=True)
         csv_penduduk = df_penduduk.to_csv(index=False).encode('utf-8')
         st.download_button("📥 Unduh CSV Penduduk", data=csv_penduduk, file_name=f"Data_Penduduk_{filter_rw}_{filter_rt}.csv", mime="text/csv")
         
     with tab2:
         st.markdown("**Bayi Lahir**")
-        st.dataframe(df_lahir, width="stretch")
+        st.dataframe(df_lahir, use_container_width=True)
         st.markdown("**Warga Meninggal**")
-        st.dataframe(df_mati, width="stretch")
+        st.dataframe(df_mati, use_container_width=True)
         
     with tab3:
         st.markdown("**Riwayat Penerima Bansos**")
-        st.dataframe(df_bansos, width="stretch")
+        st.dataframe(df_bansos, use_container_width=True)
         st.markdown("**Riwayat Permohonan Surat**")
-        st.dataframe(df_surat, width="stretch")
+        st.dataframe(df_surat, use_container_width=True)
         
     with tab4:
         df_aset = get_data("data_aset")
-        st.dataframe(df_aset, width="stretch")
+        st.dataframe(df_aset, use_container_width=True)

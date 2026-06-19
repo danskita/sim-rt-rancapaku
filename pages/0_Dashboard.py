@@ -2,14 +2,16 @@ import streamlit as st
 import pandas as pd
 from supabase import create_client, Client
 from menu import tampilkan_menu
+
+# ========================================================
+# 1. KONFIGURASI HALAMAN WAJIB PALING ATAS (Hanya Satu Kali)
+# ========================================================
 st.set_page_config(
-    page_title="Halaman Login", 
-    page_icon="logo_rtrw.png", 
-    layout="centered",
+    page_title="Dashboard Utama", 
+    page_icon="📊", 
+    layout="wide", 
     initial_sidebar_state="collapsed"
 )
-# --- KONFIGURASI HALAMAN ---
-st.set_page_config(page_title="Dashboard Utama", page_icon="📊", layout="wide")
 
 # --- KONEKSI KE SUPABASE ---
 url: str = st.secrets["supabase"]["url"]

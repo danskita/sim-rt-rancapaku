@@ -4,15 +4,16 @@ from datetime import datetime, timezone
 import os
 from supabase import create_client, Client
 from menu import tampilkan_menu
+
+# ========================================================
+# 1. KONFIGURASI HALAMAN WAJIB PALING ATAS (Hanya Satu Kali)
+# ========================================================
 st.set_page_config(
-    page_title="Halaman Login", 
-    page_icon="logo_rtrw.png", 
+    page_title="Forum Diskusi", 
+    page_icon="💬", 
     layout="centered",
     initial_sidebar_state="collapsed"
 )
-
-# --- KONFIGURASI HALAMAN ---
-st.set_page_config(page_title="Forum Diskusi", page_icon="💬", layout="centered")
 
 # --- SUNTIKAN CSS UNTUK DESAIN WHATSAPP ---
 st.markdown("""

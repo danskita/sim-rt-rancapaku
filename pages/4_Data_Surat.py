@@ -2,16 +2,22 @@ import streamlit as st
 import datetime
 from supabase import create_client, Client
 from menu import tampilkan_menu
+
+# ========================================================
+# 1. KONFIGURASI HALAMAN WAJIB PALING ATAS (Hanya Satu Kali)
+# ========================================================
 st.set_page_config(
-    page_title="Halaman Login", 
-    page_icon="logo_rtrw.png", 
+    page_title="Layanan Surat", 
+    page_icon="✉️", 
     layout="centered",
     initial_sidebar_state="collapsed"
 )
+
 # --- KONEKSI KE SUPABASE ---
 url: str = st.secrets["supabase"]["url"]
 key: str = st.secrets["supabase"]["key"]
 supabase: Client = create_client(url, key)
+
 tampilkan_menu()
 # ---------------------------
 
@@ -20,8 +26,12 @@ if "authenticated" not in st.session_state or not st.session_state["authenticate
     st.warning("⚠️ Akses Ditolak! Silakan login melalui halaman utama terlebih dahulu.")
     st.stop()
 
+# GEMBOK KHUSUS: Hanya Operator RT yang boleh masuk untuk input/edit/hapus data
+role = st.session_state.get("role", "")
+if role in ["admin_rw", "super_admin"]:
+    st.error("⛔ Akses Ditolak! Halaman ini adalah wewenang mutlak Pengurus RT. Anda (RW/Desa) hanya memiliki akses untuk melihat rekap data pada menu Cetak Laporan.")
+    st.stop()
 
-st.set_page_config(page_title="Layanan Surat", page_icon="✉️", layout="centered")
 
 st.title("✉️ Modul Layanan Surat Menyurat")
 st.markdown("Halaman ini digunakan untuk mencatat pengajuan surat pengantar warga RT.")
@@ -51,7 +61,7 @@ with st.form("form_surat", clear_on_submit=True):
     keperluan = st.text_area("Keperluan / Keterangan Detail *", help="Contoh: Untuk persyaratan beasiswa anak sekolah")
     
     st.markdown("*(Tanda * wajib diisi)*")
-    submit_surat = st.form_submit_button("Simpan Data Pengajuan Surat")
+    submit_surat = st.form_submit_button("Simpan Data Pengajuan Surat", type="primary", use_container_width=True)
     
     # Validasi dan Insert ke Supabase
     if submit_surat:

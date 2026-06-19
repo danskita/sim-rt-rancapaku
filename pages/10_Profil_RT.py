@@ -1,15 +1,16 @@
 import streamlit as st
-
 from supabase import create_client, Client
 from menu import tampilkan_menu
+
+# ========================================================
+# 1. KONFIGURASI HALAMAN WAJIB PALING ATAS (Hanya Satu Kali)
+# ========================================================
 st.set_page_config(
-    page_title="Halaman Login", 
-    page_icon="logo_rtrw.png", 
+    page_title="Profil Wilayah", 
+    page_icon="🏢", 
     layout="centered",
     initial_sidebar_state="collapsed"
 )
-# 1. ATURAN STREAMLIT: set_page_config HARUS PALING ATAS!
-st.set_page_config(page_title="Profil Wilayah", page_icon="🏢", layout="centered")
 
 # --- KONEKSI KE SUPABASE ---
 url: str = st.secrets["supabase"]["url"]
@@ -126,7 +127,7 @@ with st.form("form_profil"):
     else:
         teks_tombol = "Simpan Profil RT"
         
-    submit_profil = st.form_submit_button(teks_tombol, type="primary", width="stretch")
+    submit_profil = st.form_submit_button(teks_tombol, type="primary", use_container_width=True)
     
     if submit_profil:
         if jenis_form in ["desa", "rw"] and not desa_kelurahan:
@@ -198,6 +199,7 @@ with st.form("form_profil"):
                     st.success(f"✅ Sempurna! Profil **{nama_target}** berhasil disimpan.")
                 except Exception as e:
                     st.error(f"⚠️ Terjadi kesalahan saat menyimpan profil: {e}")
+
 # ==========================================
 # FITUR SINKRONISASI LOGO KHUSUS ADMIN DESA
 # ==========================================
@@ -208,7 +210,7 @@ if role == "super_admin":
     
     file_logo = st.file_uploader("Pilih file Logo (disarankan format PNG dengan latar transparan)", type=["png", "jpg", "jpeg"])
     
-    if st.button("🚀 Unggah & Sinkronisasikan Logo", type="primary", width="stretch"):
+    if st.button("🚀 Unggah & Sinkronisasikan Logo", type="primary", use_container_width=True):
         if file_logo is not None:
             with st.spinner("Sedang mengunggah dan menyinkronkan logo ke seluruh wilayah..."):
                 try:

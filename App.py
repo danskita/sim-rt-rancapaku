@@ -1,15 +1,16 @@
 import streamlit as st
-
 from supabase import create_client, Client
 from menu import tampilkan_menu
+
+# ========================================================
+# 1. KONFIGURASI HALAMAN WAJIB PALING ATAS (Hanya Satu Kali)
+# ========================================================
 st.set_page_config(
-    page_title="Halaman Login", 
-    page_icon="logo_rtrw.jpg", 
+    page_title="SIM Desa / RW", 
+    page_icon="🏛️", 
     layout="centered",
     initial_sidebar_state="collapsed"
 )
-# 1. ATURAN STREAMLIT: set_page_config HARUS PALING ATAS!
-st.set_page_config(page_title="SIM Desa / RW", page_icon="🏛️", layout="centered")
 
 # --- KONEKSI KE SUPABASE ---
 url: str = st.secrets["supabase"]["url"]
@@ -79,7 +80,7 @@ def check_password():
         
         st.text_input("Username", key="username_input")
         st.text_input("Password", type="password", key="password_input")
-        st.button("Masuk Aplikasi", on_click=password_entered, type="primary")
+        st.button("Masuk Aplikasi", on_click=password_entered, type="primary", use_container_width=True)
         return False
 
     return True
@@ -97,7 +98,7 @@ if check_password():
     
     # Menampilkan sapaan yang dinamis dan spesifik sesuai Role
     if st.session_state["role"] == "super_admin":
-        st.info("👋 Anda login sebagai **Super Admin (Desa)**. Anda memiliki akses untuk memantau seluruh data dari 10 RW dan 45 RT.")
+        st.info("👋 Anda login sebagai **Super Admin (Desa)**. Anda memiliki akses untuk memantau seluruh data dari tingkat RW dan RT.")
     elif st.session_state["role"] == "admin_rw":
         st.info(f"👋 Anda login sebagai **Admin RW**. Anda memiliki akses untuk memantau data seluruh RT di lingkungan RW {st.session_state['rw_akses']}.")
     else:
@@ -106,7 +107,7 @@ if check_password():
     st.markdown("---")
     st.markdown("""
     ### 📌 Petunjuk Penggunaan:
-    1. Gunakan menu navigasi di **sidebar sebelah kiri** untuk berpindah antar modul.
+    1. Klik garis tiga di pojok kiri atas untuk membuka menu.
     2. Semua data yang Anda masukkan akan otomatis dilabeli sesuai dengan wilayah akses Anda.
-    3. Pastikan untuk *Logout* atau menutup browser jika sudah selesai menggunakan aplikasi.
+    3. Pastikan untuk menekan **Logout** jika sudah selesai menggunakan aplikasi.
     """)

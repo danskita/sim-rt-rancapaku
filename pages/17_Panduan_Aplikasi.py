@@ -1,13 +1,15 @@
 import streamlit as st
 from menu import tampilkan_menu
+
+# ========================================================
+# 1. KONFIGURASI HALAMAN WAJIB PALING ATAS (Hanya Satu Kali)
+# ========================================================
 st.set_page_config(
-    page_title="Halaman Login", 
-    page_icon="logo_rtrw.png", 
+    page_title="Panduan & Akun Demo", 
+    page_icon="📖", 
     layout="centered",
     initial_sidebar_state="collapsed"
 )
-# --- KONFIGURASI HALAMAN ---
-st.set_page_config(page_title="Panduan & Akun Demo", page_icon="📖", layout="centered")
 
 # Gembok Keamanan
 if "role" not in st.session_state:
@@ -18,7 +20,7 @@ tampilkan_menu()
 # ---------------------------
 
 st.title("📖 Panduan Penggunaan & Akun Demo")
-st.markdown("Halaman ini berisi ringkasan fitur aplikasi serta draf pesan promosi yang siap disebarkan ke grup WhatsApp warga atau jajaran pengurus.")
+st.markdown("Halaman ini berisi ringkasan fitur aplikasi, petunjuk pemasangan ikon di HP, serta draf pesan promosi yang siap disebarkan ke grup WhatsApp warga atau jajaran pengurus.")
 
 # ==========================================
 # JENDELA 1: RINGKASAN FITUR APLIKASI
@@ -47,7 +49,36 @@ with st.expander("🔐 Informasi Pola Akun & Password Pengurus", expanded=False)
     """)
 
 # ==========================================
-# JENDELA 3: TEKS PROMOSI WHATSAPP (SIAP COPY)
+# JENDELA 3: PETUNJUK PEMASANGAN IKON DI HP (BARU Ditambahkan)
+# ==========================================
+with st.expander("📱 Cara Membuat Aplikasi SIM RT/RW Muncul Sebagai Ikon di HP / Laptop", expanded=False):
+    st.markdown("""
+    Agar aplikasi ini bisa dibuka langsung melalui ikon di layar utama HP layaknya aplikasi biasa (PWA), silakan ikuti petunjuk berikut sesuai perangkat Anda:
+
+    ### 🤖 1. Pengguna HP Android (Google Chrome)
+    1. Buka browser **Google Chrome** di HP Anda.
+    2. Akses halaman login aplikasi SIM RT/RW ini.
+    3. Ketuk **ikon titik tiga ( ⋮ )** di pojok kanan atas browser Chrome.
+    4. Cari dan pilih menu **"Tambahkan ke Layar Utama"** (*Add to Home screen*).
+    5. Beri nama pintasan (contoh: `SIM RT/RW`) lalu ketuk **Tambahkan / Add**.
+
+    ### 🍏 2. Pengguna iPhone / iOS (Safari)
+    1. Buka browser **Safari** di iPhone Anda (Wajib menggunakan Safari).
+    2. Akses halaman login aplikasi SIM RT/RW ini.
+    3. Ketuk tombol **Bagikan / Share** (ikon kotak dengan anak panah ke atas di bagian bawah layar).
+    4. Gulir ke atas, lalu cari dan klik menu **"Tambah ke Layar Utama"** (*Add to Home Screen*).
+    5. Beri nama pendek (contoh: `SIM RT/RW`) lalu ketuk **Tambah / Add** di pojok kanan atas.
+
+    ### 💻 3. Pengguna PC / Laptop Desktop (Google Chrome)
+    1. Buka browser **Google Chrome** di laptop Anda, lalu akses web aplikasi ini.
+    2. Klik **ikon titik tiga ( ⋮ )** di pojok kanan atas Chrome.
+    3. Pilih menu **Simpan dan Bagikan** (*Save and share*) -> **Buat Pintasan...** (*Create shortcut...*).
+    4. Beri nama aplikasi, lalu **wajib centang** kotak pilihan **"Buka sebagai jendela"** (*Open as window*).
+    5. Klik tombol **Buat**, maka aplikasi akan langsung terpasang di Desktop laptop Anda.
+    """)
+
+# ==========================================
+# JENDELA 4: TEKS PROMOSI WHATSAPP (SIAP COPY)
 # ==========================================
 st.markdown("---")
 st.subheader("📢 Teks Promosi WhatsApp")

@@ -5,16 +5,22 @@ import math
 import io
 from supabase import create_client, Client
 from menu import tampilkan_menu
+
+# ========================================================
+# 1. KONFIGURASI HALAMAN WAJIB PALING ATAS (Hanya Satu Kali)
+# ========================================================
 st.set_page_config(
-    page_title="Halaman Login", 
-    page_icon="logo_rtrw.png", 
+    page_title="Import Data", 
+    page_icon="📥", 
     layout="centered",
     initial_sidebar_state="collapsed"
 )
+
 # --- KONEKSI KE SUPABASE ---
 url: str = st.secrets["supabase"]["url"]
 key: str = st.secrets["supabase"]["key"]
 supabase: Client = create_client(url, key)
+
 tampilkan_menu()
 # ---------------------------
 
@@ -31,7 +37,6 @@ if role == "admin_rw":
     st.error("⛔ Akses Ditolak! Halaman Import Data adalah wewenang Pengurus RT dan Admin Desa.")
     st.stop()
 
-st.set_page_config(page_title="Import Data", page_icon="📥", layout="centered")
 
 st.title("📥 Import Data Penduduk Masal (Excel)")
 
@@ -57,7 +62,8 @@ st.download_button(
     label="📥 Unduh Template Excel (.xlsx)",
     data=excel_data,
     file_name='Template_Data_Penduduk.xlsx',
-    mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    use_container_width=True
 )
 
 st.markdown("---")
@@ -113,7 +119,7 @@ if uploaded_file is not None:
         st.dataframe(df)
 
         # Tombol untuk mengeksekusi import ke database Supabase
-        if st.button("🚀 Mulai Import ke Database", width="stretch"):
+        if st.button("🚀 Mulai Import ke Database", use_container_width=True, type="primary"):
             with st.spinner("Sedang menyimpan data ke cloud..."):
                 # Konversi dataframe Pandas menjadi format dictionary untuk Supabase
                 data_import = df.to_dict(orient="records")
