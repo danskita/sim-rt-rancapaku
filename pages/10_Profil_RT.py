@@ -127,7 +127,7 @@ with st.form("form_profil"):
     else:
         teks_tombol = "Simpan Profil RT"
         
-    submit_profil = st.form_submit_button(teks_tombol, type="primary", use_container_width=True)
+    submit_profil = st.form_submit_button(teks_tombol, type="primary", width="stretch")
     
     if submit_profil:
         if jenis_form in ["desa", "rw"] and not desa_kelurahan:
@@ -210,7 +210,7 @@ if role == "super_admin":
     
     file_logo = st.file_uploader("Pilih file Logo (disarankan format PNG dengan latar transparan)", type=["png", "jpg", "jpeg"])
     
-    if st.button("🚀 Unggah & Sinkronisasikan Logo", type="primary", use_container_width=True):
+    if st.button("🚀 Unggah & Sinkronisasikan Logo", type="primary", width="stretch"):
         if file_logo is not None:
             with st.spinner("Sedang mengunggah dan menyinkronkan logo ke seluruh wilayah..."):
                 try:

@@ -48,7 +48,7 @@ with tab_backup:
     st.subheader("💾 Backup Seluruh Database")
     st.info("Fitur ini akan mengunduh seluruh data dari semua tabel ke dalam satu file Excel yang rapi.")
     
-    if st.button("Siapkan File Backup", type="primary", use_container_width=True):
+    if st.button("Siapkan File Backup", type="primary", width="stretch"):
         with st.spinner("Sedang menarik data dari server Cloud... (Mohon tunggu, jangan tutup halaman ini)"):
             try:
                 # 1. Siapkan daftar tabel yang akan ditarik
@@ -94,7 +94,7 @@ with tab_backup:
                     data=excel_data,
                     file_name=f"Backup_SIM_RT_{tgl_backup}.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    use_container_width=True
+                    width="stretch"
                 )
             except Exception as e:
                 st.error(f"⚠️ Terjadi kesalahan kritis saat menyiapkan backup: {e}")
@@ -111,7 +111,7 @@ with tab_reset:
         yakin_1 = st.checkbox("Saya sadar bahwa data tidak bisa dikembalikan kecuali melalui proses Restore.")
         yakin_2 = st.checkbox("Saya sudah mengunduh file Backup hari ini.")
         
-        submit_reset = st.form_submit_button("🚨 KOSONGKAN DATABASE SEKARANG 🚨", use_container_width=True)
+        submit_reset = st.form_submit_button("🚨 KOSONGKAN DATABASE SEKARANG 🚨", width="stretch")
         
         if submit_reset:
             if konfirmasi_teks != "HAPUS SEMUA DATA":
@@ -147,7 +147,7 @@ with tab_restore:
     file_backup_upload = st.file_uploader("Pilih file Backup Excel Anda", type=['xlsx'], key="restore_file")
     
     if file_backup_upload is not None:
-        if st.button("Mulai Proses Restore", type="primary", use_container_width=True):
+        if st.button("Mulai Proses Restore", type="primary", width="stretch"):
             with st.spinner("Sedang merakit ulang database Anda... Mohon tunggu!"):
                 try:
                     xls = pd.read_excel(file_backup_upload, sheet_name=None, engine='openpyxl')
@@ -214,7 +214,7 @@ with tab_import:
         data=excel_data_import,
         file_name='Template_Data_Penduduk.xlsx',
         mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        use_container_width=True
+        width="stretch"
     )
 
     st.markdown("---")
@@ -262,9 +262,9 @@ with tab_import:
             df_import = df_import.replace({np.nan: None})
 
             st.write("Preview Data yang siap diimpor:")
-            st.dataframe(df_import, use_container_width=True)
+            st.dataframe(df_import, width="stretch")
 
-            if st.button("🚀 Eksekusi Import ke Database", use_container_width=True, type="primary"):
+            if st.button("🚀 Eksekusi Import ke Database", width="stretch", type="primary"):
                 with st.spinner("Sedang menyimpan data ke cloud..."):
                     data_import_records = df_import.to_dict(orient="records")
                     

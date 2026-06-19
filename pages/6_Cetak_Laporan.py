@@ -144,7 +144,7 @@ else:
         # Pengecekan sebelum membuat diagram Pie
         if 'jenis_kelamin' in df_penduduk.columns and not df_penduduk['jenis_kelamin'].isna().all():
             fig_gender = px.pie(df_penduduk, names='jenis_kelamin', title='Proporsi Jenis Kelamin', hole=0.4)
-            st.plotly_chart(fig_gender, use_container_width=True)
+            st.plotly_chart(fig_gender, width="stretch")
         else:
             st.info("Data jenis kelamin belum tersedia untuk membuat grafik.")
             
@@ -154,7 +154,7 @@ else:
             agama_count = df_penduduk['agama'].value_counts().reset_index()
             agama_count.columns = ['Agama', 'Jumlah']
             fig_agama = px.bar(agama_count, x='Agama', y='Jumlah', title='Distribusi Agama')
-            st.plotly_chart(fig_agama, use_container_width=True)
+            st.plotly_chart(fig_agama, width="stretch")
         else:
             st.info("Data agama belum tersedia untuk membuat grafik.")
 
@@ -168,22 +168,22 @@ else:
     tab1, tab2, tab3, tab4 = st.tabs(["👥 Data Penduduk", "🔄 Laporan LAMPID", "📦 Bansos & Surat", "🏢 Aset RT"])
     
     with tab1:
-        st.dataframe(df_penduduk, use_container_width=True)
+        st.dataframe(df_penduduk, width="stretch")
         csv_penduduk = df_penduduk.to_csv(index=False).encode('utf-8')
         st.download_button("📥 Unduh CSV Penduduk", data=csv_penduduk, file_name=f"Data_Penduduk_{filter_rw}_{filter_rt}.csv", mime="text/csv")
         
     with tab2:
         st.markdown("**Bayi Lahir**")
-        st.dataframe(df_lahir, use_container_width=True)
+        st.dataframe(df_lahir, width="stretch")
         st.markdown("**Warga Meninggal**")
-        st.dataframe(df_mati, use_container_width=True)
+        st.dataframe(df_mati, width="stretch")
         
     with tab3:
         st.markdown("**Riwayat Penerima Bansos**")
-        st.dataframe(df_bansos, use_container_width=True)
+        st.dataframe(df_bansos, width="stretch")
         st.markdown("**Riwayat Permohonan Surat**")
-        st.dataframe(df_surat, use_container_width=True)
+        st.dataframe(df_surat, width="stretch")
         
     with tab4:
         df_aset = get_data("data_aset")
-        st.dataframe(df_aset, use_container_width=True)
+        st.dataframe(df_aset, width="stretch")

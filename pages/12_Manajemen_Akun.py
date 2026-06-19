@@ -61,13 +61,13 @@ with tab_daftar:
     
     if not df_admin.empty:
         df_tampil = df_admin[['nama_wilayah', 'username', 'password', 'role', 'rt_akses', 'rw_akses']]
-        st.dataframe(df_tampil, use_container_width=True)
+        st.dataframe(df_tampil, width="stretch")
         
         st.markdown("---")
         st.markdown("### 🗑️ Hapus Akun")
         with st.form("form_hapus_akun"):
             akun_dihapus = st.selectbox("Pilih Username yang akan dihapus:", df_admin['username'].tolist())
-            submit_hapus = st.form_submit_button("Hapus Akun Permanen", type="primary", use_container_width=True)
+            submit_hapus = st.form_submit_button("Hapus Akun Permanen", type="primary", width="stretch")
             
             if submit_hapus:
                 if akun_dihapus == st.session_state['username']:
@@ -109,7 +109,7 @@ with tab_tambah:
             rt_baru = st.selectbox("Akses RT (Abaikan jika membuat akun RW/Desa)", pilihan_rt)
 
         st.markdown("*(Tanda * wajib diisi)*")
-        submit_baru = st.form_submit_button("Simpan Akun Baru", type="primary", use_container_width=True)
+        submit_baru = st.form_submit_button("Simpan Akun Baru", type="primary", width="stretch")
         
         if submit_baru:
             if not username_baru or not password_baru or not nama_wilayah_baru:
@@ -179,7 +179,7 @@ with tab_edit:
                 rt_edit = st.selectbox("Akses RT", pilihan_rt, index=pilihan_rt.index(rt_awal))
 
             st.markdown("*(Tanda * wajib diisi)*")
-            submit_edit = st.form_submit_button("Simpan Perubahan Akun", type="primary", use_container_width=True)
+            submit_edit = st.form_submit_button("Simpan Perubahan Akun", type="primary", width="stretch")
             
             if submit_edit:
                 if not password_edit or not nama_wilayah_edit:

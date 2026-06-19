@@ -60,7 +60,7 @@ with st.form("form_bansos", clear_on_submit=True):
     keterangan = st.text_area("Keterangan Tambahan", help="Contoh: Menerima beras 10kg dan minyak goreng")
     
     st.markdown("*(Tanda * wajib diisi)*")
-    submit_bansos = st.form_submit_button("Simpan Data Bansos", type="primary", use_container_width=True)
+    submit_bansos = st.form_submit_button("Simpan Data Bansos", type="primary", width="stretch")
     
     # Validasi dan Insert
     if submit_bansos:

@@ -78,7 +78,8 @@ with st.form("form_penduduk", clear_on_submit=True):
     with col_sos1:
         agama = st.selectbox("Agama *", ["Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Konghucu", "Kepercayaan Lainnya"])
         pendidikan = st.selectbox("Pendidikan Terakhir", ["Tidak/Belum Sekolah", "Belum Tamat SD/Sederajat", "Tamat SD/Sederajat", "SLTP/Sederajat", "SLTA/Sederajat", "Diploma I/II", "Akademi/Diploma III/S.Muda", "Diploma IV/Strata I", "Strata II", "Strata III"])
-        pekerjaan_input = st.text_input("Pekerjaan")
+        # PERBAIKAN: Menambahkan tanda kutip dan opsi "Lainnya" untuk antisipasi
+        pekerjaan = st.selectbox("Pekerjaan *", ["Belum/Tidak Bekerja", "Wiraswasta", "Petani", "Pedagang", "Mengurus Rumah Tangga", "Buruh Harian Lepas", "PNS", "Pelajar/Mahasiswa", "Pensiunan", "Lainnya"])
     with col_sos2:
         status_perkawinan = st.selectbox("Status Perkawinan *", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"])
         shdk = st.selectbox("Status Hub. Dalam Keluarga (SHDK) *", ["Kepala Keluarga", "Suami", "Istri", "Anak", "Menantu", "Cucu", "Orang Tua", "Mertua", "Famili Lain", "Pembantu", "Lainnya"])
@@ -90,19 +91,18 @@ with st.form("form_penduduk", clear_on_submit=True):
     
     col_alamat1, col_alamat2 = st.columns(2)
     with col_alamat1:
-        # Tampilan RT dan RW sekarang akan bereaksi terhadap siapa yang login
         rt = st.selectbox("RT *", list_rt, disabled=kunci_rt)
     with col_alamat2:
         rw = st.selectbox("RW *", list_rw, disabled=kunci_rw)
 
     st.markdown("*(Tanda * wajib diisi)*")
-    submit_button = st.form_submit_button("Simpan Data Penduduk", type="primary", use_container_width=True)
+    submit_button = st.form_submit_button("Simpan Data Penduduk", type="primary", width="stretch")
 
     if submit_button:
         nama_lengkap = nama_lengkap_input.title().strip()
         tempat_lahir = tempat_lahir_input.title().strip()
         jalan_kampung = jalan_kampung_input.title().strip()
-        pekerjaan = pekerjaan_input.title().strip()
+        # VARIABEL PEKERJAAN SUDAH DIAMBIL LANGSUNG DARI SELECTBOX DI ATAS
 
         if not no_kk.isdigit() or len(no_kk) != 16:
             st.error("❌ Gagal! Nomor KK harus berisi tepat 16 digit angka.")
@@ -121,7 +121,7 @@ with st.form("form_penduduk", clear_on_submit=True):
                 "golongan_darah": golongan_darah,
                 "agama": agama,
                 "pendidikan": pendidikan,
-                "pekerjaan": pekerjaan if pekerjaan else None,
+                "pekerjaan": pekerjaan, # Menggunakan nilai langsung dari Dropdown
                 "status_perkawinan": status_perkawinan,
                 "shdk": shdk,
                 "kewarganegaraan": kewarganegaraan,

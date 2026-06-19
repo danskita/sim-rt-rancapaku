@@ -63,7 +63,7 @@ with tab_lahir:
             nik_ayah = st.text_input("NIK Ayah", max_chars=16, help="Opsional. 16 digit angka")
             
         st.markdown("*(Tanda * wajib diisi)*")
-        submit_lahir = st.form_submit_button("Simpan Data Kelahiran", type="primary", use_container_width=True)
+        submit_lahir = st.form_submit_button("Simpan Data Kelahiran", type="primary", width="stretch")
         
         if submit_lahir:
             if not nik_ibu.isdigit() or len(nik_ibu) != 16:
@@ -108,7 +108,7 @@ with tab_mati:
             nama_pelapor = st.text_input("Nama Pelapor *")
             
         st.markdown("*(Tanda * wajib diisi)*")
-        submit_mati = st.form_submit_button("Simpan Data Kematian", type="primary", use_container_width=True)
+        submit_mati = st.form_submit_button("Simpan Data Kematian", type="primary", width="stretch")
         
         if submit_mati:
             if not nik_jenazah.isdigit() or len(nik_jenazah) != 16:
@@ -149,7 +149,7 @@ with tab_pindah:
             alamat_tujuan = st.text_area("Alamat Tujuan Lengkap *", help="Masukkan alamat tempat tinggal baru")
             
         st.markdown("*(Tanda * wajib diisi)*")
-        submit_pindah = st.form_submit_button("Simpan Data Pindah", type="primary", use_container_width=True)
+        submit_pindah = st.form_submit_button("Simpan Data Pindah", type="primary", width="stretch")
         
         if submit_pindah:
             if not nik_pindah.isdigit() or len(nik_pindah) != 16:
@@ -190,7 +190,7 @@ with tab_datang:
             alamat_asal = st.text_area("Alamat Asal Lengkap *", help="Masukkan alamat tempat tinggal sebelumnya")
             
         st.markdown("*(Tanda * wajib diisi)*")
-        submit_datang = st.form_submit_button("Simpan Data Kedatangan", type="primary", use_container_width=True)
+        submit_datang = st.form_submit_button("Simpan Data Kedatangan", type="primary", width="stretch")
         
         if submit_datang:
             if not nik_datang.isdigit() or len(nik_datang) != 16:

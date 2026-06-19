@@ -103,7 +103,7 @@ with tab_tabel:
             # Menampilkan tabel interaktif Streamlit
             st.dataframe(
                 df_tabel, 
-                use_container_width=True,
+                width="stretch",
                 column_config={
                     "id": st.column_config.NumberColumn("ID", format="%d", width="small"),
                     "tanggal": st.column_config.DateColumn("Tanggal", format="DD/MM/YYYY"),
@@ -120,7 +120,7 @@ with tab_tabel:
     else:
         st.info("📭 Belum ada arsip yang tersimpan di wilayah Anda.")
         
-    if st.button("🔄 Segarkan Tabel", use_container_width=True):
+    if st.button("🔄 Segarkan Tabel", width="stretch"):
         st.cache_data.clear()
 
 # ==========================================
@@ -141,7 +141,7 @@ with tab_tambah:
             
         file_arsip = st.file_uploader("Pilih File (PDF, JPG, PNG)", type=["pdf", "jpg", "jpeg", "png"])
         
-        submit_arsip = st.form_submit_button("💾 Unggah & Simpan Arsip", use_container_width=True, type="primary")
+        submit_arsip = st.form_submit_button("💾 Unggah & Simpan Arsip", width="stretch", type="primary")
         
         if submit_arsip:
             if not input_judul:
@@ -205,7 +205,7 @@ with tab_hapus:
         
         st.warning("⚠️ Perhatian: File yang dihapus dari tabel tidak akan bisa dikembalikan.")
         
-        if st.button("🗑️ Hapus Arsip Terpilih", type="primary", use_container_width=True):
+        if st.button("🗑️ Hapus Arsip Terpilih", type="primary", width="stretch"):
             with st.spinner("Sedang menghapus arsip..."):
                 try:
                     # Hapus dari tabel data_arsip

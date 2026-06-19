@@ -32,17 +32,14 @@ st.markdown("""
         width: 100%;
         max-width: 46rem; 
         
-        /* MENGGUNAKAN KODE WARNA HEX SOLID MUTLAK (TIDAK TRANSPARAN) */
         background-color: #0e1117 !important; 
-        
         padding: 15px 20px 20px 20px !important;
-        z-index: 999999 !important; /* Memaksa elemen selalu berada di posisi paling depan */
+        z-index: 999999 !important; 
         border-top: 2px solid #333 !important;
         border-radius: 15px 15px 0 0;
         height: max-content !important;
     }
     
-    /* Deteksi otomatis jika perangkat pengguna menggunakan Mode Terang (Light Mode) */
     @media (prefers-color-scheme: light) {
         div[data-testid="stForm"] {
             background-color: #ffffff !important; 
@@ -50,12 +47,10 @@ st.markdown("""
         }
     }
     
-    /* Memastikan komponen di dalam form tidak mewarisi transparansi */
     div[data-testid="stForm"] > div {
         background-color: transparent !important;
     }
     
-    /* 3. Menyembunyikan footer bawaan Streamlit agar bersih */
     footer {visibility: hidden;}
     </style>
 """, unsafe_allow_html=True)
@@ -66,7 +61,7 @@ key: str = st.secrets["supabase"]["key"]
 supabase: Client = create_client(url, key)
 
 # Gembok Keamanan
-if "role" not in st.session_state:
+if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
     st.warning("⚠️ Akses Ditolak! Silakan login terlebih dahulu.")
     st.stop()
 
@@ -149,7 +144,7 @@ def muat_obrolan():
 
 col_title, col_btn = st.columns([3, 1])
 with col_btn:
-    if st.button("🔄 Segarkan", use_container_width=True):
+    if st.button("🔄 Segarkan", width="stretch"):
         muat_obrolan.clear()
         st.rerun()
 
@@ -159,7 +154,6 @@ pesan_list = muat_obrolan()
 # ==========================================
 # KOTAK OBROLAN (LAYAR PENUH & DINAMIS)
 # ==========================================
-# Tidak lagi menggunakan height statis, biarkan pesan mengalir ke bawah halaman
 chat_container = st.container()
 
 with chat_container:
@@ -198,7 +192,7 @@ with chat_container:
             
         with target_col:
             if url_lampiran:
-                if tipe_lampiran == "foto": st.image(url_lampiran, use_container_width=True)
+                if tipe_lampiran == "foto": st.image(url_lampiran, width="stretch")
                 elif tipe_lampiran == "dokumen": st.markdown(f"📄 **[Unduh Dokumen]({url_lampiran})**")
                 elif tipe_lampiran == "audio": st.audio(url_lampiran)
                 elif tipe_lampiran == "video": st.video(url_lampiran)
@@ -210,14 +204,11 @@ with chat_container:
                     muat_obrolan.clear()
                     st.rerun()
 
-# --- SUNTIKAN JAVASCRIPT: AUTO SCROLL KE BAWAH (VERSI TERBARU) ---
-# Ini memastikan setelah layar dimuat, browser langsung meluncur ke pesan terbaru di dasar
-st.html("""
-    <script>
-        const doc = window.parent.document;
-        doc.documentElement.scrollTop = doc.documentElement.scrollHeight;
-    </script>
-""")
+# --- SUNTIKAN JAVASCRIPT: AUTO SCROLL (BEBAS ERROR) ---
+st.markdown(
+    """<svg onload="window.parent.document.documentElement.scrollTop = window.parent.document.documentElement.scrollHeight;" style="display:none;"></svg>""",
+    unsafe_allow_html=True
+)
 
 # ==========================================
 # INPUT KIRIM PESAN & LAMPIRAN (STATIS DI BAWAH)
@@ -232,7 +223,7 @@ with st.form("form_chat", clear_on_submit=True):
             file_lampiran = st.file_uploader("Upload", label_visibility="collapsed", type=["png", "jpg", "jpeg", "pdf", "mp3", "wav", "mp4"])
             
     with col_kirim:
-        kirim_btn = st.form_submit_button("🚀 Kirim", use_container_width=True)
+        kirim_btn = st.form_submit_button("🚀 Kirim", width="stretch")
     
     if kirim_btn:
         if not isi_pesan and not file_lampiran:

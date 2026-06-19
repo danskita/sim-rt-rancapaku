@@ -61,7 +61,7 @@ with st.form("form_aset", clear_on_submit=True):
     keterangan = st.text_area("Keterangan Tambahan", help="Contoh: Dibeli dari iuran warga bulan Agustus")
     
     st.markdown("*(Tanda * wajib diisi)*")
-    submit_aset = st.form_submit_button("Simpan Data Aset", type="primary", use_container_width=True)
+    submit_aset = st.form_submit_button("Simpan Data Aset", type="primary", width="stretch")
     
     # Validasi dan Insert ke Supabase
     if submit_aset:

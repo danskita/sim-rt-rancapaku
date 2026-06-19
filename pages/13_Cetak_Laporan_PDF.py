@@ -112,7 +112,7 @@ if "Penduduk" in jenis_laporan:
         df_preview = df_preview[(df_preview['rt'] == rt_akses) & (df_preview['rw'] == rw_akses)]
     
     if not df_preview.empty:
-        st.dataframe(df_preview[['nik', 'no_kk', 'nama_lengkap', 'jenis_kelamin', 'pekerjaan', 'rt', 'rw']], use_container_width=True)
+        st.dataframe(df_preview[['nik', 'no_kk', 'nama_lengkap', 'jenis_kelamin', 'pekerjaan', 'rt', 'rw']], width="stretch")
     else:
         st.info("ℹ️ Tidak ada data penduduk untuk wilayah Anda.")
 
@@ -148,7 +148,7 @@ elif "Surat" in jenis_laporan:
     df_preview = pd.DataFrame(res.data)
     
     if not df_preview.empty:
-        st.dataframe(df_preview[['id_surat', 'created_at', 'nik_pemohon', 'jenis_surat', 'keperluan']], use_container_width=True)
+        st.dataframe(df_preview[['id_surat', 'created_at', 'nik_pemohon', 'jenis_surat', 'keperluan']], width="stretch")
     else:
         st.info("ℹ️ Belum ada riwayat pengajuan surat.")
 
@@ -181,7 +181,7 @@ elif "Bansos" in jenis_laporan:
                 kolom_pilihan = df_preview.columns.tolist()
                 
             kolom_pilihan = list(dict.fromkeys(kolom_pilihan))
-            st.dataframe(df_preview[kolom_pilihan], use_container_width=True)
+            st.dataframe(df_preview[kolom_pilihan], width="stretch")
         else:
             st.info("ℹ️ Database penerima bantuan sosial (Bansos) masih kosong.")
     except Exception as e:
@@ -203,7 +203,7 @@ elif "Aset" in jenis_laporan:
         kolom_kndsi = 'kondisi' if 'kondisi' in df_preview.columns else 'status'
         
         kolom_tampil = [kol_n for kol_n in [kolom_nama, kolom_jml, kolom_kndsi, 'lokasi_penyimpanan'] if kol_n in df_preview.columns]
-        st.dataframe(df_preview[kolom_tampil], use_container_width=True)
+        st.dataframe(df_preview[kolom_tampil], width="stretch")
     else:
         st.info("ℹ️ Database aset kosong.")
 
@@ -212,7 +212,7 @@ st.markdown("---")
 # ==========================================
 # TOMBOL EKSEKUSI CETAK PDF
 # ==========================================
-if st.button("🖨️ Cetak ke PDF Resmi Sekarang", type="primary", use_container_width=True):
+if st.button("🖨️ Cetak ke PDF Resmi Sekarang", type="primary", width="stretch"):
     if df_preview.empty and "LAMPID" not in jenis_laporan and role != "super_admin":
         st.error("❌ Gagal mencetak! Tidak ada data yang tersedia untuk dimuat ke dalam dokumen PDF.")
     else:
@@ -816,5 +816,5 @@ if st.button("🖨️ Cetak ke PDF Resmi Sekarang", type="primary", use_containe
                 data=pdf_bytes,
                 file_name=f"Laporan_{jenis_laporan[:8]}_{wilayah_teks.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.pdf",
                 mime="application/pdf",
-                use_container_width=True
+                width="stretch"
             )

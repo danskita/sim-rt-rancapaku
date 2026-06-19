@@ -61,7 +61,7 @@ with st.form("form_surat", clear_on_submit=True):
     keperluan = st.text_area("Keperluan / Keterangan Detail *", help="Contoh: Untuk persyaratan beasiswa anak sekolah")
     
     st.markdown("*(Tanda * wajib diisi)*")
-    submit_surat = st.form_submit_button("Simpan Data Pengajuan Surat", type="primary", use_container_width=True)
+    submit_surat = st.form_submit_button("Simpan Data Pengajuan Surat", type="primary", width="stretch")
     
     # Validasi dan Insert ke Supabase
     if submit_surat:

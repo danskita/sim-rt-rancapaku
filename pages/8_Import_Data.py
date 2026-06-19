@@ -63,7 +63,7 @@ st.download_button(
     data=excel_data,
     file_name='Template_Data_Penduduk.xlsx',
     mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    use_container_width=True
+    width="stretch"
 )
 
 st.markdown("---")
@@ -119,7 +119,7 @@ if uploaded_file is not None:
         st.dataframe(df)
 
         # Tombol untuk mengeksekusi import ke database Supabase
-        if st.button("🚀 Mulai Import ke Database", use_container_width=True, type="primary"):
+        if st.button("🚀 Mulai Import ke Database", width="stretch", type="primary"):
             with st.spinner("Sedang menyimpan data ke cloud..."):
                 # Konversi dataframe Pandas menjadi format dictionary untuk Supabase
                 data_import = df.to_dict(orient="records")

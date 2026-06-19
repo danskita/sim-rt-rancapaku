@@ -50,7 +50,7 @@ with tab_backup:
     st.subheader(f"💾 Backup Data Wilayah RW {rw_akses}")
     st.info("Fitur ini akan mengunduh seluruh data warga yang berada di wilayah RW Anda ke dalam satu file Excel.")
     
-    if st.button("Siapkan File Backup RW", type="primary", use_container_width=True):
+    if st.button("Siapkan File Backup RW", type="primary", width="stretch"):
         with st.spinner("Sedang menarik data dari server Cloud... (Mohon tunggu)"):
             try:
                 daftar_tabel = [
@@ -92,7 +92,7 @@ with tab_backup:
                     data=excel_data,
                     file_name=f"Backup_RW_{rw_akses}_{tgl_backup}.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    use_container_width=True
+                    width="stretch"
                 )
             except Exception as e:
                 st.error(f"⚠️ Terjadi kesalahan: {e}")
@@ -108,7 +108,7 @@ with tab_reset:
         konfirmasi_teks = st.text_input("Ketik persis: HAPUS DATA RW")
         yakin_1 = st.checkbox("Saya sadar data RW ini akan dihapus permanen.")
         
-        submit_reset = st.form_submit_button("🚨 KOSONGKAN DATA RW SEKARANG 🚨", use_container_width=True)
+        submit_reset = st.form_submit_button("🚨 KOSONGKAN DATA RW SEKARANG 🚨", width="stretch")
         
         if submit_reset:
             if konfirmasi_teks != "HAPUS DATA RW":
@@ -157,7 +157,7 @@ with tab_import:
         data=excel_data_import,
         file_name=f'Template_Data_RW_{rw_akses}.xlsx',
         mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        use_container_width=True
+        width="stretch"
     )
 
     st.markdown("---")
@@ -201,9 +201,9 @@ with tab_import:
             df_import = df_import.replace({np.nan: None})
 
             st.write("Preview Data yang siap diimpor:")
-            st.dataframe(df_import, use_container_width=True)
+            st.dataframe(df_import, width="stretch")
 
-            if st.button("🚀 Eksekusi Import ke Database", use_container_width=True, type="primary"):
+            if st.button("🚀 Eksekusi Import ke Database", width="stretch", type="primary"):
                 with st.spinner("Sedang menyimpan data ke cloud..."):
                     data_import_records = df_import.to_dict(orient="records")
                     

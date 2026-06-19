@@ -228,7 +228,7 @@ with tab_pengantar:
                 paragraf_2 = f"Orang tersebut di atas adalah benar warga yang berdomisili di lingkungan RT {rt_akses} / RW {rw_akses}. Surat pengantar ini dibuat untuk keperluan: {keperluan}."
                 jenis_dokumen = "Surat Pengantar"
             
-            if st.button(f"🖨️ Cetak & Otomatis Arsipkan {jenis_dokumen}", type="primary", use_container_width=True):
+            if st.button(f"🖨️ Cetak & Otomatis Arsipkan {jenis_dokumen}", type="primary", width="stretch"):
                 with st.spinner("Merangkai PDF dan Menyimpan ke Arsip Digital..."):
                     pdf = PDFMaster()
                     pdf.add_page()
@@ -318,7 +318,7 @@ with tab_pengantar:
                         st.warning(f"✅ Dokumen berhasil dirangkai, namun gagal Auto-Arsip: {err}")
 
             if "pdf_pengantar" in st.session_state:
-                st.download_button(label=f"📥 Download Dokumen PDF", data=st.session_state["pdf_pengantar"], file_name=st.session_state["nama_file_pengantar"], mime="application/pdf", use_container_width=True)
+                st.download_button(label=f"📥 Download Dokumen PDF", data=st.session_state["pdf_pengantar"], file_name=st.session_state["nama_file_pengantar"], mime="application/pdf", width="stretch")
 
 # ---------------------------------------------------------
 # TAB 2: SURAT UNDANGAN
@@ -346,7 +346,7 @@ with tab_undangan:
             tempat_acara = st.text_input("Tempat Pelaksanaan", value="Posko / Balai Pertemuan")
             agenda = st.text_input("Agenda / Acara", value="Membahas Keamanan & Ketertiban Lingkungan")
             
-        submit_undangan = st.form_submit_button("🖨️ Cetak & Otomatis Arsipkan Undangan", type="primary", use_container_width=True)
+        submit_undangan = st.form_submit_button("🖨️ Cetak & Otomatis Arsipkan Undangan", type="primary", width="stretch")
         
     if submit_undangan:
         with st.spinner("Memproses Surat Undangan dan Menyimpan ke Arsip..."):
@@ -438,7 +438,7 @@ with tab_undangan:
                 st.warning(f"✅ Undangan berhasil dirangkai, namun gagal Auto-Arsip: {err}")
 
     if "pdf_undangan" in st.session_state:
-        st.download_button(label="📥 Download Surat Undangan", data=st.session_state["pdf_undangan"], file_name="Surat_Undangan.pdf", mime="application/pdf", use_container_width=True)
+        st.download_button(label="📥 Download Surat Undangan", data=st.session_state["pdf_undangan"], file_name="Surat_Undangan.pdf", mime="application/pdf", width="stretch")
 
 # ---------------------------------------------------------
 # TAB 3: LAPORAN KEGIATAN
@@ -458,7 +458,7 @@ with tab_kegiatan:
         deskripsi = st.text_area("Deskripsi / Rangkaian Kegiatan", value="1. Pembersihan area publik.\n2. Pemangkasan ranting pohon rawan tumbang.", height=120)
         hasil = st.text_area("Hasil yang Dicapai / Notulensi", value="Lingkungan menjadi lebih bersih. Kegiatan berjalan dengan lancar.", height=120)
         
-        submit_laporan = st.form_submit_button("🖨️ Cetak & Otomatis Arsipkan Laporan", type="primary", use_container_width=True)
+        submit_laporan = st.form_submit_button("🖨️ Cetak & Otomatis Arsipkan Laporan", type="primary", width="stretch")
         
     if submit_laporan:
         with st.spinner("Memproses Laporan Kegiatan dan Menyimpan ke Arsip..."):
@@ -543,4 +543,4 @@ with tab_kegiatan:
                 st.warning(f"✅ Laporan berhasil dirangkai, namun gagal Auto-Arsip: {err}")
 
     if "pdf_laporan" in st.session_state:
-        st.download_button(label="📥 Download Laporan Kegiatan", data=st.session_state["pdf_laporan"], file_name="Laporan_Kegiatan.pdf", mime="application/pdf", use_container_width=True)
+        st.download_button(label="📥 Download Laporan Kegiatan", data=st.session_state["pdf_laporan"], file_name="Laporan_Kegiatan.pdf", mime="application/pdf", width="stretch")
