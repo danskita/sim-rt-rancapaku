@@ -1,6 +1,22 @@
 import streamlit as st
 
 def tampilkan_menu():
+    # ==============================================================
+    # SUNTIKAN JAVASCRIPT: AUTO-CLOSE SIDEBAR SETELAH PINDAH HALAMAN
+    # ==============================================================
+    st.markdown(
+        """
+        <svg onload="
+            const sidebar = window.parent.document.querySelector('[data-testid=\\'stSidebar\\']');
+            if (sidebar && sidebar.getAttribute('aria-expanded') === 'true') {
+                const closeBtn = window.parent.document.querySelector('[data-testid=\\'stSidebarCollapseButton\\']');
+                if (closeBtn) closeBtn.click();
+            }
+        " style="display:none;"></svg>
+        """, 
+        unsafe_allow_html=True
+    )
+
     # Jika belum login, hanya tampilkan menu Login
     if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
         st.sidebar.page_link("App.py", label="Halaman Login", icon="🔐")
@@ -44,7 +60,6 @@ def tampilkan_menu():
         if role == "super_admin":
             st.sidebar.page_link("pages/11_Pengaturan_Sistem.py", label="Pengaturan Sistem", icon="⚠️")
         elif role == "admin_rw":
-            # Ganti "14_Pengaturan_RW.py" dengan nama file yang baru saja Anda buat untuk RW
             st.sidebar.page_link("pages/14_Pengaturan_RW.py", label="Kelola Data RW", icon="⚙️")
 
     # =========================================================
@@ -66,7 +81,7 @@ def tampilkan_menu():
 
     # Kondisi 1: Jika tombol utama BELUM ditekan
     if not st.session_state.konfirmasi_keluar:
-        if st.sidebar.button("🚪 Logout dari Sistem", use_container_width=True, key="btn_logout_utama"): 
+        if st.sidebar.button("🚪 Logout dari Sistem", width="stretch", key="btn_logout_utama"): 
             st.session_state.konfirmasi_keluar = True
             st.rerun()
             
@@ -78,11 +93,11 @@ def tampilkan_menu():
         col1, col2 = st.sidebar.columns(2)
         
         with col1:
-            if st.button("Ya", use_container_width=True, type="primary", key="btn_ya"):
+            if st.button("Ya", width="stretch", type="primary", key="btn_ya"):
                 st.session_state.clear()
                 st.switch_page("App.py")
         
         with col2:
-            if st.button("Batal", use_container_width=True, type="secondary", key="btn_batal"):
+            if st.button("Batal", width="stretch", type="secondary", key="btn_batal"):
                 st.session_state.konfirmasi_keluar = False
                 st.rerun()
