@@ -39,6 +39,45 @@ tampilkan_menu()
 
 st.title("🏢 Pembuatan Proposal Bantuan")
 st.markdown("Fasilitas otomatis untuk mencetak Proposal Permohonan Bantuan atau Kegiatan (RUTILAHU / Infrastruktur RT & RW).")
+
+# ========================================================
+# AUTO-FILL: MENGAMBIL DATA DARI PROFIL WILAYAH
+# ========================================================
+@st.cache_data(ttl=10)
+def ambil_data_profil_otomatis(rw_aktif, rt_aktif):
+    data_profil = {
+        "desa": "",
+        "kota": "",
+        "kades": "",
+        "ketua_rw": "",
+        "ketua_rt": ""
+    }
+    try:
+        # Ambil data Desa (Untuk Nama Desa, Kota, dan Nama Kades)
+        res_desa = supabase.table("profil_rt").select("*").eq("nama_rt_rw", "TINGKAT DESA").execute()
+        if res_desa.data:
+            data_profil["desa"] = res_desa.data[0].get("kelurahan", "")
+            data_profil["kota"] = res_desa.data[0].get("kota", "")
+            data_profil["kades"] = res_desa.data[0].get("nama_ketua_rt", "")
+            
+        # Ambil data RW (Untuk Nama Ketua RW)
+        res_rw = supabase.table("profil_rt").select("*").eq("nama_rt_rw", f"RW {rw_aktif}").execute()
+        if res_rw.data:
+            data_profil["ketua_rw"] = res_rw.data[0].get("nama_ketua_rt", "")
+            
+        # Ambil data RT (Untuk Nama Ketua RT jika yang login adalah RT)
+        res_rt = supabase.table("profil_rt").select("*").eq("nama_rt_rw", f"RT {rt_aktif} / RW {rw_aktif}").execute()
+        if res_rt.data:
+            data_profil["ketua_rt"] = res_rt.data[0].get("nama_ketua_rt", "")
+            
+    except Exception as e:
+        pass
+    
+    return data_profil
+
+# Tarik data otomatis
+profil_otomatis = ambil_data_profil_otomatis(rw_akses, rt_akses)
+
 st.markdown("---")
 
 # ========================================================
@@ -371,14 +410,16 @@ if kategori == "1. Perbaikan RUTILAHU Warga":
         with tab1:
             col1, col2 = st.columns(2)
             with col1:
-                nama_desa = st.text_input("Nama Desa *", placeholder="Contoh: Sukamaju")
-                kades_nama = st.text_input("Nama Kepala Desa *")
+                # Kolom Kiri - Diisi otomatis dari database
+                nama_desa = st.text_input("Nama Desa *", value=profil_otomatis["desa"], placeholder="Contoh: Sukamaju")
+                kades_nama = st.text_input("Nama Kepala Desa *", value=profil_otomatis["kades"])
                 instansi_tujuan = st.text_input("Ditujukan Kepada (Instansi) *", placeholder="Contoh: BAZNAS / Dinas Sosial")
             with col2:
+                # Kolom Kanan - Diisi otomatis dari session / database
                 nomor_rw = st.text_input("Nomor RW Pengaju *", value=rw_akses)
-                ketua_rw = st.text_input("Nama Ketua RW *")
+                ketua_rw = st.text_input("Nama Ketua RW *", value=profil_otomatis["ketua_rw"])
                 kontak_rw = st.text_input("No. HP / WA Ketua RW *")
-                kota_kab = st.text_input("Kota / Kabupaten *")
+                kota_kab = st.text_input("Kota / Kabupaten *", value=profil_otomatis["kota"])
 
         with tab2:
             nama_sasaran = st.text_input("Nama Pemilik Rumah (Penerima Bantuan) *")
@@ -400,7 +441,7 @@ if kategori == "1. Perbaikan RUTILAHU Warga":
                 {"Uraian Kebutuhan": "Batu Bata / Batako", "Harga Satuan (Rp)": 3500, "Jumlah Harga (Rp)": 7000000},
                 {"Uraian Kebutuhan": "Ongkos Tukang", "Harga Satuan (Rp)": 300000, "Jumlah Harga (Rp)": 3000000},
             ])
-            # Menggunakan parameter use_container_width=True karena st.data_editor belum sepenuhnya support width="stretch"
+            # Tetap menggunakan use_container_width karena ini DataFrame/tabel (st.data_editor)
             rab_diisi = st.data_editor(rab_default, num_rows="dynamic", use_container_width=True)
 
         with tab4:
@@ -441,15 +482,17 @@ elif kategori == "2. Kegiatan / Infrastruktur RT & RW":
         with tab1:
             col1, col2 = st.columns(2)
             with col1:
-                nama_desa = st.text_input("Nama Desa *")
-                kades_nama = st.text_input("Nama Kepala Desa *")
+                # Kolom Kiri - Diisi otomatis dari database
+                nama_desa = st.text_input("Nama Desa *", value=profil_otomatis["desa"])
+                kades_nama = st.text_input("Nama Kepala Desa *", value=profil_otomatis["kades"])
                 instansi_tujuan = st.text_input("Ditujukan Kepada (Instansi/Donatur) *", placeholder="Contoh: Bapak Bupati / Donatur")
             with col2:
+                # Kolom Kanan - Diisi otomatis dari session / database
                 nomor_rw = st.text_input("Nomor RW *", value=rw_akses)
-                nomor_rt = st.text_input("Nomor RT (Isi '-' jika pengaju adalah RW)", value=rt_akses)
-                ketua_rw = st.text_input("Nama Ketua RW *")
-                ketua_rt = st.text_input("Nama Ketua RT / Ketua Panitia *")
-                kota_kab = st.text_input("Kota / Kabupaten *")
+                nomor_rt = st.text_input("Nomor RT (Isi '-' jika pengaju adalah RW)", value=rt_akses if role == "operator_rt" else "-")
+                ketua_rw = st.text_input("Nama Ketua RW *", value=profil_otomatis["ketua_rw"])
+                ketua_rt = st.text_input("Nama Ketua RT / Ketua Panitia *", value=profil_otomatis["ketua_rt"])
+                kota_kab = st.text_input("Kota / Kabupaten *", value=profil_otomatis["kota"])
 
         with tab2:
             nama_kegiatan = st.text_input("Nama / Judul Kegiatan *", placeholder="Contoh: Pembangunan Gapura Utama RW 05")
@@ -463,6 +506,7 @@ elif kategori == "2. Kegiatan / Infrastruktur RT & RW":
                 {"Uraian Kebutuhan": "Material Bahan Bangunan", "Harga Satuan (Rp)": 5000000, "Jumlah Harga (Rp)": 5000000},
                 {"Uraian Kebutuhan": "Konsumsi Gotong Royong", "Harga Satuan (Rp)": 500000, "Jumlah Harga (Rp)": 1500000},
             ])
+            # Tetap menggunakan use_container_width karena ini DataFrame/tabel (st.data_editor)
             rab_diisi_kegiatan = st.data_editor(rab_default_kegiatan, num_rows="dynamic", use_container_width=True)
 
         with tab4:
