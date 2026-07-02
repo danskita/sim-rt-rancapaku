@@ -44,6 +44,7 @@ def tampilkan_menu():
         st.sidebar.page_link("pages/8_Import_Data.py", label="Import Data Excel", icon="📥")
         st.sidebar.page_link("pages/15_Data_Arsip.py", label="Arsip Digital", icon="🗂️")
         st.sidebar.page_link("pages/16_Forum_Diskusi.py", label="Forum Diskusi", icon="💬") 
+        st.sidebar.page_link("pages/18_Pembuatan_Proposal.py", label="Pembuatan Proposal", icon="📑")
         st.sidebar.page_link("pages/17_Panduan_Aplikasi.py", label="Panduan & Akun", icon="📖")
 
     # 2. MENU KHUSUS ADMIN RW & KEPALA DESA
@@ -54,7 +55,8 @@ def tampilkan_menu():
         st.sidebar.page_link("pages/12_Manajemen_Akun.py", label="Manajemen Akun", icon="🔐")
         st.sidebar.page_link("pages/15_Data_Arsip.py", label="Arsip Digital", icon="🗂️")
         st.sidebar.page_link("pages/16_Forum_Diskusi.py", label="Forum Diskusi", icon="💬")
-        st.sidebar.page_link("pages/17_Panduan_Aplikasi.py", label="Panduan & Akun", icon="📖") 
+        st.sidebar.page_link("pages/18_Pembuatan_Proposal.py", label="Pembuatan Proposal", icon="📑")
+        st.sidebar.page_link("pages/17_Panduan_Aplikasi.py", label="Panduan & Akun", icon="📖")
         
         # --- SINKRONISASI PENGATURAN RW vs DESA ---
         if role == "super_admin":
@@ -67,7 +69,7 @@ def tampilkan_menu():
     # =========================================================
     st.sidebar.markdown("---")
     st.sidebar.subheader("🖨️ Pusat Cetak Dokumen")
-    st.sidebar.page_link("pages/9_Cetak_PDF.py", label="Cetak Surat & Kegiatan", icon="✉️")
+    st.sidebar.page_link("pages/9_Cetak_PDF.py", label="Cetak Surat Keterangan", icon="✉️")
     st.sidebar.page_link("pages/13_Cetak_Laporan_PDF.py", label="Cetak Laporan Massal", icon="📊")
 
     # =========================================================
